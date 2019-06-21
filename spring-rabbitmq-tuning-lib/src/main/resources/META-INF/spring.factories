@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.tradeshift.amqp.autoconfigure.TunedRabbitAutoConfiguration
+
+org.springframework.boot.env.EnvironmentPostProcessor=com.tradeshift.amqp.autoconfigure.TunedEnvironmentPostProcessor
