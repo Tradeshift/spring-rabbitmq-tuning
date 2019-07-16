@@ -23,6 +23,8 @@ jobs:
     steps:
       - checkout
 
+      - run: mvn clean install
+
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -38,4 +40,4 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
       # run tests!
-      - run: mvn integration-test
+      - run: mvn clean verify
