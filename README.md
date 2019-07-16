@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/Tradeshift/spring-rabbitmq-tuning.svg?style=svg)](https://circleci.com/gh/Tradeshift/spring-rabbitmq-tuning)
+
 # Spring RabbitMQ Tuning
 
 This library makes it easy to configure RabbitMQ for use with Spring.
@@ -15,7 +17,7 @@ This library makes it easy to configure RabbitMQ for use with Spring.
 ___
 
 ## Technologies
- This lib uses **Java 8** and **Spring Boot 2.1.4.RELEASE**
+ This lib uses **Java 8** and **Spring Boot 2.1.x.RELEASE**
 
 ## Autoconfiguration
 
