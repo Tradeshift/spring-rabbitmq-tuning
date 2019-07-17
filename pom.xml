@@ -38,6 +38,8 @@
     <modules>
         <module>spring-rabbitmq-tuning-lib</module>
         <module>spring-rabbitmq-tuning-examples/spring-rabbitmq-tuning-example-java</module>
+        <module>spring-rabbitmq-tuning-examples/spring-rabbitmq-tuning-example-java-without-autoconfig</module>
+        <module>spring-rabbitmq-tuning-examples/spring-rabbitmq-tuning-example-java-without-autoconfig-with-multi-connections</module>
     </modules>
 
     <scm>

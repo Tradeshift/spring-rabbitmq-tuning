@@ -37,10 +37,10 @@ spring.rabbitmq.custom.some-event.port=5672
 spring.rabbitmq.custom.some-event.ttlRetryMessage=5000
 spring.rabbitmq.custom.some-event.maxRetriesAttempts=5
 spring.rabbitmq.custom.some-event.ttlMultiply=2
-spring.rabbitmq.custom.some-event.queueRoutingKey=CREATE.PERMISSION.FOR.ATTACHMENT
-spring.rabbitmq.custom.some-event.exchange=ex_create_permission_for_attachment
+spring.rabbitmq.custom.some-event.queueRoutingKey=ROUTING.KEY.TEST
+spring.rabbitmq.custom.some-event.exchange=ex.custom.direct
 spring.rabbitmq.custom.some-event.exchangeType=direct
-spring.rabbitmq.custom.some-event.queue=queue_create_permission_for_attachment
+spring.rabbitmq.custom.some-event.queue=queue.custom.test
 spring.rabbitmq.custom.some-event.autoCreate=true
 spring.rabbitmq.custom.some-event.concurrentConsumers=1
 spring.rabbitmq.custom.some-event.maxConcurrentConsumers=1
@@ -65,7 +65,36 @@ spring.rabbitmq.custom.another-event.username=guest
 spring.rabbitmq.custom.another-event.password=${RABBITMQ_PASS}
 ``` 
 
-## Properties Docs
+**Note**: You can disable this **disable** the autoconfiguration, to do this, use the properties below:
+
+- **spring.rabbitmq.enable.custom.autoconfiguration=false**
+  - With this option you can disable the autoconfiguration and use your own configuration with other benefits of this lib
+- **rabbitTemplateBeanName**
+  - If you have more than 1 connection and you want to disable the autoconfiguration you need to inform the name of the RabbitTemplate bean for each connection
+
+Ex:
+
+```properties
+spring.rabbitmq.enable.custom.autoconfiguration=false
+
+spring.rabbitmq.custom.some-event.ttlRetryMessage=5000
+spring.rabbitmq.custom.some-event.maxRetriesAttempts=3
+spring.rabbitmq.custom.some-event.ttlMultiply=2
+spring.rabbitmq.custom.some-event.queueRoutingKey=ROUTING.KEY.TEST
+spring.rabbitmq.custom.some-event.exchange=ex.custom.direct
+spring.rabbitmq.custom.some-event.queue=queue.custom.test
+spring.rabbitmq.custom.some-event.virtualHost=tradeshift
+spring.rabbitmq.custom.some-event.rabbitTemplateBeanName=rabbitTemplateForTradeshiftVH
+
+spring.rabbitmq.custom.another-event.ttlRetryMessage=5000
+spring.rabbitmq.custom.another-event.maxRetriesAttempts=5
+spring.rabbitmq.custom.another-event.queueRoutingKey=TEST.QUEUE
+spring.rabbitmq.custom.another-event.exchange=ex_test_1
+spring.rabbitmq.custom.another-event.queue=queue_test_1
+spring.rabbitmq.custom.another-event.rabbitTemplateBeanName=rabbitTemplateForDefaultVH
+``` 
+
+## Properties Docs 
   - **ttlRetryMessage**
     - Define the time to live between retries  
   - **maxRetriesAttempts**
@@ -223,7 +252,7 @@ public void sendMessage(final String message) {
 To listeners is very simple too. The only thing that you need to do is annotate a method with the **RabbitListener** annotation and pass the name of **containerFactory**.
 > How do I know the name of the correct container factory for each virtual host?
 
-You don't need to know, just pass the name of you event and the library will do the magic for you!
+You don't need to know, just pass the name of your event and the library will do the magic for you!
 
 This lib also has an option to enable the **retry** and **dlq** strategy, that is recommended to use.
 
