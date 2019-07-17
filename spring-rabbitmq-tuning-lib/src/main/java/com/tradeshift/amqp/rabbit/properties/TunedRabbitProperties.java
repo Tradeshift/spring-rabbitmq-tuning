@@ -30,6 +30,7 @@ public class TunedRabbitProperties extends RabbitProperties {
     private boolean autoCreateOnlyForTest;
     private boolean enableJsonMessageConverter;
     private boolean enableSnakeCaseForQueuesAndExchangeNames;
+    private String rabbitTemplateBeanName;
 
     public TunedRabbitProperties() {
         //Do nothing because this is a empty constructor
@@ -221,5 +222,13 @@ public class TunedRabbitProperties extends RabbitProperties {
 
     public void setAutoCreateForRetryDlq(boolean autoCreateForRetryDlq) {
         this.autoCreateForRetryDlq = autoCreateForRetryDlq;
+    }
+
+    public String getRabbitTemplateBeanName() {
+        return rabbitTemplateBeanName;
+    }
+
+    public void setRabbitTemplateBeanName(String rabbitTemplateBeanName) {
+        this.rabbitTemplateBeanName = rabbitTemplateBeanName;
     }
 }

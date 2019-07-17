@@ -44,7 +44,7 @@ public class EnableRabbitRetryAndDlqAspect {
         try {
             joinPoint.proceed();
         } catch (Exception e) {
-            log.info("The listener [{}.{}] threw an exception: {}", method.getClass().getSimpleName(), method.getName(), e.getMessage());
+            log.info("The listener [{}.{}] threw an exception: {}", method.getDeclaringClass().getSimpleName(), method.getName(), e.getMessage());
             if (exceptions.contains(Exception.class) || exceptions.contains(e.getClass())) {
                 TunedRabbitProperties properties = rabbitCustomPropertiesMap.get(queueProperty);
                 if (Objects.isNull(properties)) {

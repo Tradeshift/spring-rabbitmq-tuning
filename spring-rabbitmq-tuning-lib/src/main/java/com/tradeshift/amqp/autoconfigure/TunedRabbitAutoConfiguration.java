@@ -37,6 +37,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -81,9 +82,12 @@ public class TunedRabbitAutoConfiguration {
         this.beanFactory = beanFactory;
     }
 
+    @ConditionalOnProperty(
+            value = "spring.rabbitmq.enable.custom.autoconfiguration",
+            havingValue = "true",
+            matchIfMissing = true)
     @Configuration
     static class RabbitPostProcessorConfiguration {
-
         @Bean(name = RabbitListenerConfigUtils.RABBIT_LISTENER_ANNOTATION_PROCESSOR_BEAN_NAME)
         @DependsOn(TunedRabbitConstants.CONNECTION_FACTORY_BEAN_NAME)
         public static RabbitListenerAnnotationBeanPostProcessor rabbitListenerAnnotationProcessor() {
@@ -91,10 +95,13 @@ public class TunedRabbitAutoConfiguration {
         }
     }
 
+    @ConditionalOnProperty(
+            value = "spring.rabbitmq.enable.custom.autoconfiguration",
+            havingValue = "true",
+            matchIfMissing = true)
     @Configuration
     @EnableRabbit
     static class EnableRabbitConfiguration {
-
         @Bean(name = RabbitListenerConfigUtils.RABBIT_LISTENER_ANNOTATION_PROCESSOR_BEAN_NAME)
         public static RabbitListenerAnnotationBeanPostProcessor rabbitListenerAnnotationProcessor() {
             return new TunedRabbitListenerAnnotationBeanPostProcessor();
@@ -102,14 +109,38 @@ public class TunedRabbitAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(
+            value = "spring.rabbitmq.enable.custom.autoconfiguration",
+            havingValue = "true",
+            matchIfMissing = true)
     @DependsOn(TunedRabbitConstants.CONNECTION_FACTORY_BEAN_NAME)
     public RabbitTemplateHandler rabbitTemplateHandler(TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
         return new RabbitTemplateHandler(applicationContext, rabbitCustomPropertiesMap);
     }
 
     @Bean
+    @ConditionalOnProperty(
+            value = "spring.rabbitmq.enable.custom.autoconfiguration",
+            havingValue = "true",
+            matchIfMissing = true)
     @DependsOn(TunedRabbitConstants.CONNECTION_FACTORY_BEAN_NAME)
     public RabbitAdminHandler rabbitAdminHandler(TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
+        return new RabbitAdminHandler(applicationContext, rabbitCustomPropertiesMap);
+    }
+
+    @Bean("rabbitTemplateHandler")
+    @ConditionalOnProperty(
+            value = "spring.rabbitmq.enable.custom.autoconfiguration",
+            havingValue = "false")
+    public RabbitTemplateHandler rabbitTemplateHandlerWithoutAutoConfig(TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
+        return new RabbitTemplateHandler(applicationContext, rabbitCustomPropertiesMap);
+    }
+
+    @Bean("rabbitAdminHandler")
+    @ConditionalOnProperty(
+            value = "spring.rabbitmq.enable.custom.autoconfiguration",
+            havingValue = "false")
+    public RabbitAdminHandler rabbitAdminHandlerWithoutAutoConfig(TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
         return new RabbitAdminHandler(applicationContext, rabbitCustomPropertiesMap);
     }
 
@@ -125,11 +156,19 @@ public class TunedRabbitAutoConfiguration {
         return new EnableRabbitRetryAndDlqAspect(queueRetryComponent(rabbitCustomPropertiesMap), rabbitCustomPropertiesMap);
     }
 
+    @ConditionalOnProperty(
+            value = "spring.rabbitmq.enable.custom.autoconfiguration",
+            havingValue = "true",
+            matchIfMissing = true)
     @Bean
     public MessageConverter producerJackson2MessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
+    @ConditionalOnProperty(
+            value = "spring.rabbitmq.enable.custom.autoconfiguration",
+            havingValue = "true",
+            matchIfMissing = true)
     @Primary
     @Bean(TunedRabbitConstants.CONNECTION_FACTORY_BEAN_NAME)
     @DependsOn("producerJackson2MessageConverter")
