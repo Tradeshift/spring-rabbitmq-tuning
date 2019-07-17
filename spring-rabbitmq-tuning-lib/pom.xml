@@ -38,10 +38,9 @@
 
     <scm>
         <tag>HEAD</tag>
-        <url>scm:git@github.com:Tradeshift/tradeshift-spring-rabbitmq-autoconfig.git</url>
-        <connection>scm:git@github.com:Tradeshift/tradeshift-spring-rabbitmq-autoconfig.git</connection>
-        <developerConnection>scm:git@github.com:Tradeshift/tradeshift-spring-rabbitmq-autoconfig.git
-        </developerConnection>
+        <connection>scm:git:ssh://git@github.com:Tradeshift/spring-rabbitmq-tuning.git</connection>
+        <url>https://github.com/Tradeshift/spring-rabbitmq-tuning</url>
+        <developerConnection>scm:git:ssh://git@github.com:Tradeshift/spring-rabbitmq-tuning.git</developerConnection>
     </scm>
 
     <distributionManagement>
@@ -114,6 +113,16 @@
                     <target>8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <releaseProfiles>release</releaseProfiles>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -126,7 +135,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>2.2.1</version>
+                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -140,7 +149,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9.1</version>
+                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>

@@ -23,7 +23,10 @@ jobs:
     steps:
       - checkout
 
+      - run: cd spring-rabbitmq-tuning-lib
       - run: mvn clean install
+      - run: cd ..
+      - run: mvn clean package
 
       # Download and cache dependencies
       - restore_cache:
