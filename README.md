@@ -6,7 +6,7 @@ This library makes it easy to configure RabbitMQ for use with Spring.
 
 # Table of Contents
 - [Technologies](#technologies)
-- [Autoconfiguration](#https://github.com/Tradeshift/spring-rabbitmq-tuning/wiki/Autoconfiguration)
+- [Autoconfiguration](https://github.com/Tradeshift/spring-rabbitmq-tuning/wiki/Autoconfiguration)
   - [Disabling](https://github.com/Tradeshift/spring-rabbitmq-tuning/wiki/Autoconfiguration#disabling)
 - [Properties Docs](https://github.com/Tradeshift/spring-rabbitmq-tuning/wiki/Properties-Documentation)
 - [Queues Strategy](https://github.com/Tradeshift/spring-rabbitmq-tuning/wiki/Queues-Strategy)
@@ -20,3 +20,22 @@ ___
  This lib uses **Java 8** and **Spring Boot 2.1.x.RELEASE**
  
 ## Adding in your project
+
+### Maven
+
+```xml
+<dependency>
+  <groupId>com.tradeshift</groupId>
+  <artifactId>spring-rabbitmq-tuning-lib</artifactId>
+  <version>0.0.1</version>
+</dependency>
+```
+
+### Gradle
+
+```groovy
+implementation 'com.tradeshift:spring-rabbitmq-tuning-lib:0.0.1'
+```
+
+# Current Version
+## 0.0.1
