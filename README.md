@@ -6,7 +6,7 @@ This library makes it easy to configure RabbitMQ for use with Spring.
 
 # Table of Contents
 - [Technologies](#technologies)
-- [Autoconfiguration](#https://github.com/Tradeshift/spring-rabbitmq-tuning/wiki/Autoconfiguration)
+- [Autoconfiguration](https://github.com/Tradeshift/spring-rabbitmq-tuning/wiki/Autoconfiguration)
   - [Disabling](https://github.com/Tradeshift/spring-rabbitmq-tuning/wiki/Autoconfiguration#disabling)
 - [Properties Docs](https://github.com/Tradeshift/spring-rabbitmq-tuning/wiki/Properties-Documentation)
 - [Queues Strategy](https://github.com/Tradeshift/spring-rabbitmq-tuning/wiki/Queues-Strategy)

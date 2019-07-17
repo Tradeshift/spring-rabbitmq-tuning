@@ -3,18 +3,12 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.tradeshift</groupId>
-        <artifactId>spring-rabbitmq-tuning-parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../../</relativePath>
-    </parent>
-
-    <artifactId>spring-rabbitmq-tuning-example-java-without-autoconfig</artifactId>
-    <version>${parent.version}</version>
+    <groupId>com.tradeshift</groupId>
+    <artifactId>spring-rabbitmq-tuning-example-java</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Spring RabbitMQ Tuning Example for Java Without Autoconfiguration</name>
+    <name>Spring RabbitMQ Tuning Example for Java</name>
     <description>Example module to showcase with Java</description>
 
     <properties>
@@ -25,7 +19,7 @@
         <dependency>
             <groupId>com.tradeshift</groupId>
             <artifactId>spring-rabbitmq-tuning-lib</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -38,11 +32,6 @@
             <version>${springboot.version}</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <version>${springboot.version}</version>
@@ -50,15 +39,4 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
