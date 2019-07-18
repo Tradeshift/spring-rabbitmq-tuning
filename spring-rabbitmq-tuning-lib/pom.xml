@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>spring-rabbitmq-tuning-lib</artifactId>
+  <version>0.0.2-SNAPSHOT</version>
 
     <name>Spring RabbitMQ Tuning Library</name>
     <description>This library was created to make it easier to configure RabbitMQ within Spring and to establish a pattern for queues architecture.</description>
@@ -40,7 +41,7 @@
         <connection>scm:git:git@github.com:Tradeshift/spring-rabbitmq-tuning.git</connection>
         <developerConnection>scm:git:git@github.com:Tradeshift/spring-rabbitmq-tuning.git</developerConnection>
         <url>https://github.com/Tradeshift/spring-rabbitmq-tuning/tree/master</url>
-      <tag>v0.0.1</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <distributionManagement>
