@@ -37,10 +37,9 @@
     </developers>
 
     <scm>
-        <tag>HEAD</tag>
-        <connection>scm:git:ssh://git@github.com:Tradeshift/spring-rabbitmq-tuning.git</connection>
-        <url>https://github.com/Tradeshift/spring-rabbitmq-tuning</url>
-        <developerConnection>scm:git:ssh://git@github.com:Tradeshift/spring-rabbitmq-tuning.git</developerConnection>
+        <connection>scm:git:git@github.com:Tradeshift/spring-rabbitmq-tuning.git</connection>
+        <developerConnection>scm:git:git@github.com:Tradeshift/spring-rabbitmq-tuning.git</developerConnection>
+        <url>https://github.com/Tradeshift/spring-rabbitmq-tuning/tree/master</url>
     </scm>
 
     <distributionManagement>

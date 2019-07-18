@@ -42,13 +42,6 @@
         <module>spring-rabbitmq-tuning-examples/spring-rabbitmq-tuning-example-java-without-autoconfig-with-multi-connections</module>
     </modules>
 
-    <scm>
-        <tag>HEAD</tag>
-        <url>scm:git@github.com:Tradeshift/spring-rabbitmq-tuning.git</url>
-        <connection>scm:git@github.com:Tradeshift/spring-rabbitmq-tuning.git</connection>
-        <developerConnection>scm:git@github.com:Tradeshift/spring-rabbitmq-tuning.git</developerConnection>
-    </scm>
-
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
