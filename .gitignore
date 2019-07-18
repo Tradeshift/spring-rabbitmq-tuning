@@ -13,3 +13,5 @@ traces/
 /.mvn/
 /.idea/
 .DS_Store
+
+release.properties
