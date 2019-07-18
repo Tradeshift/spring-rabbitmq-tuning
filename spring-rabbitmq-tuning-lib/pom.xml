@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.tradeshift</groupId>
         <artifactId>spring-rabbitmq-tuning-parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.1</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -40,7 +40,8 @@
         <connection>scm:git:git@github.com:Tradeshift/spring-rabbitmq-tuning.git</connection>
         <developerConnection>scm:git:git@github.com:Tradeshift/spring-rabbitmq-tuning.git</developerConnection>
         <url>https://github.com/Tradeshift/spring-rabbitmq-tuning/tree/master</url>
-    </scm>
+      <tag>v0.0.1</tag>
+  </scm>
 
     <distributionManagement>
         <snapshotRepository>
