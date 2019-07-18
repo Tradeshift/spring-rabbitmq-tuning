@@ -5,7 +5,7 @@
 
     <groupId>com.tradeshift</groupId>
     <artifactId>spring-rabbitmq-tuning-lib</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>jar</packaging>
 
     <name>Spring RabbitMQ Tuning Library</name>
