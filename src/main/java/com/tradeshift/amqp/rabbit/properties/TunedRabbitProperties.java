@@ -1,39 +1,70 @@
 package com.tradeshift.amqp.rabbit.properties;
 
 import java.util.Objects;
-
-import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.core.io.Resource;
 
-public class TunedRabbitProperties extends RabbitProperties {
+public class TunedRabbitProperties {
+
+    private String host = "localhost";
+
+    private int port = 5672;
+
+    private String username = "guest";
+
+    private String password = "guest";
+
+    private String virtualHost;
 
     private String eventName;
+
     private Integer ttlRetryMessage = 5000;
+
     private Integer maxRetriesAttempts = 3;
+
     private Integer ttlMultiply = 0;
+
     private String queueRoutingKey;
+
     private String exchange;
+
     private String exchangeType;
+
     private String queue;
+
     private String queueRetry;
+
     private String queueDlq;
+
     private boolean defaultRetryDlq = true;
+
     private boolean autoCreate;
+
     private boolean autoCreateForRetryDlq = true;
+
     private boolean automaticRecovery;
+
     private Integer concurrentConsumers = 1;
+
     private Integer maxConcurrentConsumers = 1;
+
     private Resource tlsKeystoreLocation;
+
     private String tlsKeystorePassword;
+
     private boolean primary;
+
     private boolean sslConnection;
+
     private boolean autoCreateOnlyForTest;
+
     private boolean enableJsonMessageConverter;
+
     private boolean enableSnakeCaseForQueuesAndExchangeNames;
+
     private String rabbitTemplateBeanName;
 
     public TunedRabbitProperties() {
-        //Do nothing because this is a empty constructor
+        // Do nothing because this is a empty constructor
     }
 
     public String getQueueRetry() {
@@ -48,7 +79,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return eventName;
     }
 
-    public void setEventName(String eventName) {
+    public void setEventName(final String eventName) {
         this.eventName = eventName;
     }
 
@@ -56,7 +87,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return ttlRetryMessage;
     }
 
-    public void setTtlRetryMessage(Integer ttlRetryMessage) {
+    public void setTtlRetryMessage(final Integer ttlRetryMessage) {
         this.ttlRetryMessage = ttlRetryMessage;
     }
 
@@ -64,7 +95,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return maxRetriesAttempts;
     }
 
-    public void setMaxRetriesAttempts(Integer maxRetriesAttempts) {
+    public void setMaxRetriesAttempts(final Integer maxRetriesAttempts) {
         this.maxRetriesAttempts = maxRetriesAttempts;
     }
 
@@ -72,7 +103,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return queueRoutingKey;
     }
 
-    public void setQueueRoutingKey(String queueRoutingKey) {
+    public void setQueueRoutingKey(final String queueRoutingKey) {
         this.queueRoutingKey = queueRoutingKey;
     }
 
@@ -80,7 +111,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return validateSnakeCase(exchange);
     }
 
-    public void setExchange(String exchange) {
+    public void setExchange(final String exchange) {
         this.exchange = exchange;
     }
 
@@ -88,7 +119,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return exchangeType;
     }
 
-    public void setExchangeType(String exchangeType) {
+    public void setExchangeType(final String exchangeType) {
         this.exchangeType = exchangeType;
     }
 
@@ -96,15 +127,15 @@ public class TunedRabbitProperties extends RabbitProperties {
         return validateSnakeCase(queue);
     }
 
-    public void setQueue(String queue) {
+    public void setQueue(final String queue) {
         this.queue = queue;
     }
 
-    public void setQueueRetry(String queueRetry) {
+    public void setQueueRetry(final String queueRetry) {
         this.queueRetry = queueRetry;
     }
 
-    public void setQueueDlq(String queueDlq) {
+    public void setQueueDlq(final String queueDlq) {
         this.queueDlq = queueDlq;
     }
 
@@ -112,7 +143,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return defaultRetryDlq;
     }
 
-    public void setDefaultRetryDlq(boolean defaultRetryDlq) {
+    public void setDefaultRetryDlq(final boolean defaultRetryDlq) {
         this.defaultRetryDlq = defaultRetryDlq;
     }
 
@@ -120,7 +151,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return autoCreate;
     }
 
-    public void setAutoCreate(boolean autoCreate) {
+    public void setAutoCreate(final boolean autoCreate) {
         this.autoCreate = autoCreate;
     }
 
@@ -128,7 +159,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return automaticRecovery;
     }
 
-    public void setAutomaticRecovery(boolean automaticRecovery) {
+    public void setAutomaticRecovery(final boolean automaticRecovery) {
         this.automaticRecovery = automaticRecovery;
     }
 
@@ -136,7 +167,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return concurrentConsumers;
     }
 
-    public void setConcurrentConsumers(Integer concurrentConsumers) {
+    public void setConcurrentConsumers(final Integer concurrentConsumers) {
         this.concurrentConsumers = concurrentConsumers;
     }
 
@@ -144,7 +175,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return maxConcurrentConsumers;
     }
 
-    public void setMaxConcurrentConsumers(Integer maxConcurrentConsumers) {
+    public void setMaxConcurrentConsumers(final Integer maxConcurrentConsumers) {
         this.maxConcurrentConsumers = maxConcurrentConsumers;
     }
 
@@ -152,7 +183,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return tlsKeystoreLocation;
     }
 
-    public void setTlsKeystoreLocation(Resource tlsKeystoreLocation) {
+    public void setTlsKeystoreLocation(final Resource tlsKeystoreLocation) {
         this.tlsKeystoreLocation = tlsKeystoreLocation;
     }
 
@@ -160,7 +191,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return tlsKeystorePassword;
     }
 
-    public void setTlsKeystorePassword(String tlsKeystorePassword) {
+    public void setTlsKeystorePassword(final String tlsKeystorePassword) {
         this.tlsKeystorePassword = tlsKeystorePassword;
     }
 
@@ -168,7 +199,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return primary;
     }
 
-    public void setPrimary(boolean primary) {
+    public void setPrimary(final boolean primary) {
         this.primary = primary;
     }
 
@@ -176,7 +207,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return sslConnection;
     }
 
-    public void setSslConnection(boolean sslConnection) {
+    public void setSslConnection(final boolean sslConnection) {
         this.sslConnection = sslConnection;
     }
 
@@ -184,7 +215,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return autoCreateOnlyForTest;
     }
 
-    public void setAutoCreateOnlyForTest(boolean autoCreateOnlyForTest) {
+    public void setAutoCreateOnlyForTest(final boolean autoCreateOnlyForTest) {
         this.autoCreateOnlyForTest = autoCreateOnlyForTest;
     }
 
@@ -192,7 +223,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return ttlMultiply;
     }
 
-    public void setTtlMultiply(Integer ttlMultiply) {
+    public void setTtlMultiply(final Integer ttlMultiply) {
         this.ttlMultiply = ttlMultiply;
     }
 
@@ -200,7 +231,7 @@ public class TunedRabbitProperties extends RabbitProperties {
         return enableJsonMessageConverter;
     }
 
-    public void setEnableJsonMessageConverter(boolean enableJsonMessageConverter) {
+    public void setEnableJsonMessageConverter(final boolean enableJsonMessageConverter) {
         this.enableJsonMessageConverter = enableJsonMessageConverter;
     }
 
@@ -208,19 +239,15 @@ public class TunedRabbitProperties extends RabbitProperties {
         return enableSnakeCaseForQueuesAndExchangeNames;
     }
 
-    public void setEnableSnakeCaseForQueuesAndExchangeNames(boolean enableSnakeCaseForQueuesAndExchangeNames) {
+    public void setEnableSnakeCaseForQueuesAndExchangeNames(final boolean enableSnakeCaseForQueuesAndExchangeNames) {
         this.enableSnakeCaseForQueuesAndExchangeNames = enableSnakeCaseForQueuesAndExchangeNames;
-    }
-
-    private String validateSnakeCase(String string) {
-        return enableSnakeCaseForQueuesAndExchangeNames ? string.replace('.', '_') : string.replace('_', '.');
     }
 
     public boolean isAutoCreateForRetryDlq() {
         return autoCreateForRetryDlq;
     }
 
-    public void setAutoCreateForRetryDlq(boolean autoCreateForRetryDlq) {
+    public void setAutoCreateForRetryDlq(final boolean autoCreateForRetryDlq) {
         this.autoCreateForRetryDlq = autoCreateForRetryDlq;
     }
 
@@ -228,7 +255,52 @@ public class TunedRabbitProperties extends RabbitProperties {
         return rabbitTemplateBeanName;
     }
 
-    public void setRabbitTemplateBeanName(String rabbitTemplateBeanName) {
+    public void setRabbitTemplateBeanName(final String rabbitTemplateBeanName) {
         this.rabbitTemplateBeanName = rabbitTemplateBeanName;
     }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(final String host) {
+        this.host = host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(final int port) {
+        this.port = port;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(final String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(final String password) {
+        this.password = password;
+    }
+
+    public String getVirtualHost() {
+        return virtualHost;
+    }
+
+    public void setVirtualHost(final String virtualHost) {
+        this.virtualHost = virtualHost;
+    }
+
+    private String validateSnakeCase(final String string) {
+        return enableSnakeCaseForQueuesAndExchangeNames ? string.replace('.', '_') : string.replace('_', '.');
+    }
+
 }
