@@ -26,7 +26,7 @@ public class TunedRabbitListenerAnnotationBeanPostProcessor
 
     @Override
     protected void processAmqpListener(RabbitListener rabbitListener, Method method, Object bean, String beanName) {
-        TunedRabbitPropertiesMap tunedRabbitPropertiesMap = (TunedRabbitPropertiesMap) applicationContext.getBean(TunedRabbitPropertiesMap.class);
+        TunedRabbitPropertiesMap tunedRabbitPropertiesMap = applicationContext.getBean(TunedRabbitPropertiesMap.class);
         TunedRabbitProperties tunedRabbitProperties = tunedRabbitPropertiesMap.get(rabbitListener.containerFactory());
 
         TunedRabbitListener tunedRabbitListener = new TunedRabbitListener(rabbitListener);
