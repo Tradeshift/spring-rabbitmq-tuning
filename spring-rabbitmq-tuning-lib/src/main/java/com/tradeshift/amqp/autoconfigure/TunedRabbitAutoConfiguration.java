@@ -66,6 +66,9 @@ import com.tradeshift.amqp.ssl.TLSContextUtil;
 public class TunedRabbitAutoConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(TunedRabbitAutoConfiguration.class);
+    private static final String DIRECT = "direct";
+    private static final String FANOUT = "fanout";
+    private static final String TOPIC = "topic";
     private Set<String> virtualHosts = new HashSet<>();
     private Set<String> portAndHost = new HashSet<>();
 
@@ -269,9 +272,9 @@ public class TunedRabbitAutoConfiguration {
     private void autoCreateQueues(TunedRabbitProperties properties, RabbitAdmin rabbitAdmin) {
         Exchange exchange = new TopicExchange(properties.getExchange(), true, false);
 
-        if ("direct".equals(properties.getExchangeType())) {
+        if (isADirectExchange(properties)) {
             exchange = new DirectExchange(properties.getExchange(), true, false);
-        } else if ("fanout".equals(properties.getExchangeType())) {
+        } else if (isAFanoutExchange(properties)) {
             exchange = new FanoutExchange(properties.getExchange(), true, false);
         }
 
@@ -280,7 +283,7 @@ public class TunedRabbitAutoConfiguration {
         rabbitAdmin.declareQueue(queue);
         rabbitAdmin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(properties.getQueueRoutingKey()).noargs());
 
-        if (properties.isAutoCreateForRetryDlq()) {
+        if (properties.isAutoCreateForRetryDlq() && isAValidExchange(properties)) {
             final Queue dlq = QueueBuilder.durable(properties.getQueueDlq()).build();
             final Queue retry = QueueBuilder.durable(properties.getQueueRetry())
                     .withArgument("x-dead-letter-exchange", properties.getExchange())
@@ -291,6 +294,18 @@ public class TunedRabbitAutoConfiguration {
             rabbitAdmin.declareBinding(BindingBuilder.bind(retry).to(exchange).with(properties.getQueueRetry()).noargs());
             rabbitAdmin.declareBinding(BindingBuilder.bind(dlq).to(exchange).with(properties.getQueueDlq()).noargs());
         }
+    }
+
+    private boolean isAValidExchange(TunedRabbitProperties properties) {
+        return DIRECT.equals(properties.getExchangeType()) || TOPIC.equals(properties.getExchangeType());
+    }
+
+    private boolean isADirectExchange(TunedRabbitProperties properties) {
+        return DIRECT.equals(properties.getExchangeType());
+    }
+
+    private boolean isAFanoutExchange(TunedRabbitProperties properties) {
+        return FANOUT.equals(properties.getExchange());
     }
 
     private boolean isTestProfile() {
