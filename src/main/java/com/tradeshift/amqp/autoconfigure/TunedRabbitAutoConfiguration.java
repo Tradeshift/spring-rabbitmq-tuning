@@ -334,11 +334,7 @@ public class TunedRabbitAutoConfiguration {
     }
 
     private boolean isAValidExchange(TunedRabbitProperties properties) {
-        return isADirectExchange(properties) || isATopicExchange(properties);
-    }
-
-    private boolean isATopicExchange(TunedRabbitProperties properties) {
-        return TOPIC.equals(properties.getExchangeType());
+        return DIRECT.equals(properties.getExchangeType()) || TOPIC.equals(properties.getExchangeType());
     }
 
     private boolean isADirectExchange(TunedRabbitProperties properties) {
