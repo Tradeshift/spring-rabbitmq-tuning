@@ -1,16 +1,24 @@
 package com.tradeshift.amqp.autoconfigure;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.DefaultSaslConfig;
+import com.tradeshift.amqp.annotation.EnableRabbitRetryAndDlqAspect;
+import com.tradeshift.amqp.constants.TunedRabbitConstants;
+import com.tradeshift.amqp.rabbit.annotation.TunedRabbitListenerAnnotationBeanPostProcessor;
+import com.tradeshift.amqp.rabbit.handlers.RabbitAdminHandler;
+import com.tradeshift.amqp.rabbit.handlers.RabbitTemplateHandler;
+import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
+import com.tradeshift.amqp.rabbit.properties.TunedRabbitPropertiesMap;
+import com.tradeshift.amqp.rabbit.retry.QueueRetryComponent;
+import com.tradeshift.amqp.resolvers.RabbitBeanNameResolver;
+import com.tradeshift.amqp.ssl.TLSContextUtil;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
@@ -46,24 +54,11 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DefaultSaslConfig;
-import com.tradeshift.amqp.annotation.EnableRabbitRetryAndDlqAspect;
-import com.tradeshift.amqp.constants.TunedRabbitConstants;
-import com.tradeshift.amqp.rabbit.annotation.TunedRabbitListenerAnnotationBeanPostProcessor;
-import com.tradeshift.amqp.rabbit.handlers.RabbitAdminHandler;
-import com.tradeshift.amqp.rabbit.handlers.RabbitTemplateHandler;
-import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
-import com.tradeshift.amqp.rabbit.properties.TunedRabbitPropertiesMap;
-import com.tradeshift.amqp.rabbit.retry.QueueRetryComponent;
-import com.tradeshift.amqp.resolvers.RabbitBeanNameResolver;
-import com.tradeshift.amqp.ssl.TLSContextUtil;
-
 @EnableConfigurationProperties(TunedRabbitPropertiesMap.class)
 @Configuration
-@ConditionalOnClass({ RabbitTemplate.class, Channel.class })
+@ConditionalOnClass({RabbitTemplate.class, Channel.class})
 @AutoConfigureBefore(RabbitAutoConfiguration.class)
-@Import({ TunedRabbitAutoConfiguration.RabbitPostProcessorConfiguration.class })
+@Import({TunedRabbitAutoConfiguration.RabbitPostProcessorConfiguration.class})
 public class TunedRabbitAutoConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(TunedRabbitAutoConfiguration.class);
@@ -169,22 +164,22 @@ public class TunedRabbitAutoConfiguration {
     @Primary
     @Bean(TunedRabbitConstants.CONNECTION_FACTORY_BEAN_NAME)
     @DependsOn("producerJackson2MessageConverter")
-    public ConnectionFactory routingConnectionFactory(
-            TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
-
-        validateSinglePrimeryConnection(rabbitCustomPropertiesMap);
+    public ConnectionFactory routingConnectionFactory(TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
+        validateSinglePrimaryConnection(rabbitCustomPropertiesMap);
 
         AtomicReference<ConnectionFactory> defaultConnectionFactory = new AtomicReference<>();
 
         HashMap<Object, ConnectionFactory> connectionFactoryHashMap = new HashMap<>();
-        asStream(rabbitCustomPropertiesMap).forEach(stringQueuePropertiesEntry -> {
-            stringQueuePropertiesEntry.getValue().setEventName(stringQueuePropertiesEntry.getKey());
-            ConnectionFactory connectionFactory = createRabbitMQArch(stringQueuePropertiesEntry.getValue());
+        rabbitCustomPropertiesMap.forEach((eventName, properties) -> {
+            properties.setEventName(eventName);
+            ConnectionFactory connectionFactory = createRabbitMQArch(properties);
 
-            connectionFactoryHashMap.put(RabbitBeanNameResolver.getConnectionFactoryBeanName(stringQueuePropertiesEntry.getValue().getVirtualHost(),
-                    stringQueuePropertiesEntry.getValue().getHost(), stringQueuePropertiesEntry.getValue().getPort()), connectionFactory);
+            connectionFactoryHashMap.put(
+                    RabbitBeanNameResolver.getConnectionFactoryBeanName(properties.getVirtualHost(), properties.getHost(), properties.getPort()),
+                    connectionFactory
+            );
 
-            if (stringQueuePropertiesEntry.getValue().isPrimary()) {
+            if (properties.isPrimary()) {
                 defaultConnectionFactory.set(connectionFactory);
             }
         });
@@ -200,8 +195,11 @@ public class TunedRabbitAutoConfiguration {
         return connectionFactory;
     }
 
-    private void validateSinglePrimeryConnection(TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
-        long primary = asStream(rabbitCustomPropertiesMap).filter(stringQueuePropertiesEntry -> stringQueuePropertiesEntry.getValue().isPrimary()).count();
+    private void validateSinglePrimaryConnection(TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
+        long primary = rabbitCustomPropertiesMap.stream()
+                .filter(stringQueuePropertiesEntry -> stringQueuePropertiesEntry.getValue().isPrimary())
+                .count();
+
         if (primary > 1) {
             throw new IllegalArgumentException("Only one primary RabbitMQ architecture is allowed!");
         }
@@ -211,16 +209,16 @@ public class TunedRabbitAutoConfiguration {
         final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(property.getVirtualHost());
 
         if (!portAndHost.contains(property.getPort() + property.getHost())) {
-            applyAutoconfiguration(property);
+            applyAutoConfiguration(property);
         } else if (!virtualHosts.contains(virtualHost)) {
-            applyAutoconfiguration(property);
+            applyAutoConfiguration(property);
         }
 
         return (CachingConnectionFactory) applicationContext.getBean(RabbitBeanNameResolver
                 .getConnectionFactoryBeanName(property.getVirtualHost(), property.getHost(), property.getPort()));
     }
 
-    private void applyAutoconfiguration(final TunedRabbitProperties property) {
+    private void applyAutoConfiguration(final TunedRabbitProperties property) {
         final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(property.getVirtualHost());
         CachingConnectionFactory connectionsFactoryBean = createConnectionsFactoryBean(property, virtualHost);
         Optional.ofNullable(connectionsFactoryBean).ifPresent(connectionFactory -> {
@@ -334,13 +332,6 @@ public class TunedRabbitAutoConfiguration {
 
     private boolean isTestProfile() {
         return Arrays.asList(applicationContext.getEnvironment().getActiveProfiles()).contains("test");
-    }
-
-    private static <T, U> Stream<Map.Entry<T, U>> asStream(final Map<T, U> map) {
-        return Optional.ofNullable(map)
-                .map(Map::entrySet)
-                .map(Collection::stream)
-                .orElse(Stream.empty());
     }
 
 }
