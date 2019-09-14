@@ -212,6 +212,8 @@ public class TunedRabbitAutoConfiguration {
             applyAutoConfiguration(property);
         } else if (!virtualHosts.contains(virtualHost)) {
             applyAutoConfiguration(property);
+        } else {
+        	applyAutoConfigurationOnlyForBinding(property);
         }
 
         return (CachingConnectionFactory) applicationContext.getBean(RabbitBeanNameResolver
@@ -251,6 +253,23 @@ public class TunedRabbitAutoConfiguration {
                 autoCreateQueues(property, beanDefinitionRabbitAdmin);
             }
         });
+    }
+    
+    /**
+     * Apply the auto configuration to create the binding between exchange and queue.
+     * It tries to recover the ConnectionFactory and RabbitAdmin from bean factory.
+     */
+    private void applyAutoConfigurationOnlyForBinding(final TunedRabbitProperties properties) {
+    	final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(properties.getVirtualHost());
+
+    	String rabbitAdminBeanName = RabbitBeanNameResolver.getRabbitAdminBeanName(virtualHost, properties.getHost(), properties.getPort());
+    	log.info("Getting RabbitAdmin Bean with name {} for the event {} and virtual host {}",
+                rabbitAdminBeanName, properties.getEventName(), virtualHost);
+    	RabbitAdmin rabbitAdmin = beanFactory.getBean(rabbitAdminBeanName, RabbitAdmin.class);
+
+        if (properties.isAutoCreate() || (properties.isAutoCreateOnlyForTest() && isTestProfile())) {
+            autoCreateQueues(properties, rabbitAdmin);
+        }
     }
 
     private CachingConnectionFactory createConnectionsFactoryBean(final TunedRabbitProperties property, String virtualHost) {
@@ -304,6 +323,8 @@ public class TunedRabbitAutoConfiguration {
     }
 
     private void autoCreateQueues(TunedRabbitProperties properties, RabbitAdmin rabbitAdmin) {
+        log.info("Declaring binding for exchange '{}', queue '{}' and routing key '{}'", properties.getExchange(), properties.getQueue(), properties.getQueueRoutingKey());
+        
         Exchange exchange = new TopicExchange(properties.getExchange(), true, false);
 
         if ("direct".equals(properties.getExchangeType())) {
