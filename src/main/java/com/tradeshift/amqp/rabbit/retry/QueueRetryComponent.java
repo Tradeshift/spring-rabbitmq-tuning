@@ -43,13 +43,17 @@ public class QueueRetryComponent {
         message.getMessageProperties()
                 .setExpiration(String.valueOf(calculateTtl(properties.getTtlRetryMessage(), qtdRetry, properties.getTtlMultiply())));
         rabbitTemplateHandler.getRabbitTemplate(properties).send(properties.getExchange(), properties.getQueueRetry(), message);
-        log.info("M=sendToRetry, Message={}", message);
+        if (properties.isEnableRetryMessageLog()) {
+            log.info("M=sendToRetry, Message={}", message);
+        }
     }
 
     public void sendToDlq(final Message message, final TunedRabbitProperties properties) {
         message.getMessageProperties().getHeaders().remove(X_DEATH);
         rabbitTemplateHandler.getRabbitTemplate(properties).send(properties.getExchange(), properties.getQueueDlq(), message);
-        log.info("M=sendToDlq, Message={}", message);
+        if (properties.isEnableRetryMessageLog()) {
+            log.info("M=sendToDlq, Message={}", message);
+        }
     }
 
     public int countDeath(final Message message) {

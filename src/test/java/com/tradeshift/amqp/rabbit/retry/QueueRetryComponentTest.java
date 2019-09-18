@@ -188,7 +188,6 @@ public class QueueRetryComponentTest {
         queueProperties.setSslConnection(false);
         queueProperties.setTtlMultiply(ttlMultiply);
         queueProperties.setMaxRetriesAttempts(maxRetry);
-
         return queueProperties;
     }
 
