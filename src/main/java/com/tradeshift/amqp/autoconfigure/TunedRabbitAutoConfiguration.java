@@ -3,7 +3,7 @@ package com.tradeshift.amqp.autoconfigure;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultSaslConfig;
 import com.tradeshift.amqp.annotation.EnableRabbitRetryAndDlqAspect;
-import com.tradeshift.amqp.constants.TunedRabbitConstants;
+import com.tradeshift.amqp.log.TunedRabbitConstants;
 import com.tradeshift.amqp.rabbit.annotation.TunedRabbitListenerAnnotationBeanPostProcessor;
 import com.tradeshift.amqp.rabbit.handlers.RabbitAdminHandler;
 import com.tradeshift.amqp.rabbit.handlers.RabbitTemplateHandler;

@@ -63,7 +63,7 @@ public class TunedRabbitPropertiesTest {
     public void should_retry_log_message_flag_be_enabled_by_default() {
         String queueName = "queue.test.default";
         TunedRabbitProperties queueProperties = createQueueProperties(queueName, true, false);
-        assertTrue(queueProperties.isEnableRetryMessageLog());
+        assertTrue(queueProperties.isEnableLogs());
     }
 
     private TunedRabbitProperties createQueueProperties(String queue, boolean defaultRetryDlq, boolean enableSnakeCaseForQueuesAndExchangeNames) {

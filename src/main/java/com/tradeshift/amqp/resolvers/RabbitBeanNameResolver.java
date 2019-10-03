@@ -3,7 +3,7 @@ package com.tradeshift.amqp.resolvers;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.tradeshift.amqp.constants.TunedRabbitConstants;
+import com.tradeshift.amqp.log.TunedRabbitConstants;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
 
 public class RabbitBeanNameResolver {
