@@ -1,17 +1,16 @@
 package com.tradeshift.amqp.autoconfigure;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DefaultSaslConfig;
 import com.tradeshift.amqp.annotation.EnableRabbitRetryAndDlqAspect;
 import com.tradeshift.amqp.log.TunedRabbitConstants;
 import com.tradeshift.amqp.rabbit.annotation.TunedRabbitListenerAnnotationBeanPostProcessor;
+import com.tradeshift.amqp.rabbit.components.RabbitComponentsFactory;
 import com.tradeshift.amqp.rabbit.handlers.RabbitAdminHandler;
 import com.tradeshift.amqp.rabbit.handlers.RabbitTemplateHandler;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitPropertiesMap;
 import com.tradeshift.amqp.rabbit.retry.QueueRetryComponent;
 import com.tradeshift.amqp.resolvers.RabbitBeanNameResolver;
-import com.tradeshift.amqp.ssl.TLSContextUtil;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,9 +36,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.connection.SimpleRoutingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.amqp.support.converter.SimpleMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -67,11 +64,14 @@ public class TunedRabbitAutoConfiguration {
 
     private final ApplicationContext applicationContext;
     private final ConfigurableListableBeanFactory beanFactory;
+	private final RabbitComponentsFactory rabbitComponentsFactory;
 
     @Autowired
-    public TunedRabbitAutoConfiguration(ApplicationContext applicationContext, ConfigurableListableBeanFactory beanFactory) {
+    public TunedRabbitAutoConfiguration(ApplicationContext applicationContext, ConfigurableListableBeanFactory beanFactory,
+    		RabbitComponentsFactory rabbitComponentsFactory) {
         this.applicationContext = applicationContext;
         this.beanFactory = beanFactory;
+		this.rabbitComponentsFactory = rabbitComponentsFactory;
     }
 
     @ConditionalOnProperty(
@@ -154,7 +154,7 @@ public class TunedRabbitAutoConfiguration {
             matchIfMissing = true)
     @Bean
     public MessageConverter producerJackson2MessageConverter() {
-        return new Jackson2JsonMessageConverter();
+        return rabbitComponentsFactory.createJackson2MessageConverter();
     }
 
     @ConditionalOnProperty(
@@ -189,10 +189,7 @@ public class TunedRabbitAutoConfiguration {
             first.ifPresent(defaultConnectionFactory::set);
         }
 
-        SimpleRoutingConnectionFactory connectionFactory = new SimpleRoutingConnectionFactory();
-        connectionFactory.setTargetConnectionFactories(connectionFactoryHashMap);
-        connectionFactory.setDefaultTargetConnectionFactory(defaultConnectionFactory.get());
-        return connectionFactory;
+        return rabbitComponentsFactory.createSimpleRoutingConnectionFactory(defaultConnectionFactory, connectionFactoryHashMap);
     }
 
     private void validateSinglePrimaryConnection(TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
@@ -222,7 +219,8 @@ public class TunedRabbitAutoConfiguration {
 
     private void applyAutoConfiguration(final TunedRabbitProperties property) {
         final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(property.getVirtualHost());
-        CachingConnectionFactory connectionsFactoryBean = createConnectionsFactoryBean(property, virtualHost);
+        CachingConnectionFactory connectionsFactoryBean = rabbitComponentsFactory.createCachingConnectionFactory(property, virtualHost);
+        
         Optional.ofNullable(connectionsFactoryBean).ifPresent(connectionFactory -> {
             String connectionFactoryBeanName = RabbitBeanNameResolver.getConnectionFactoryBeanName(virtualHost, property.getHost(), property.getPort());
             beanFactory.registerSingleton(connectionFactoryBeanName, connectionFactory);
@@ -230,18 +228,18 @@ public class TunedRabbitAutoConfiguration {
                     connectionFactoryBeanName, property.getEventName(), virtualHost);
 
             String listenerContainerFactoryBeanName = RabbitBeanNameResolver.getSimpleRabbitListenerContainerFactoryBean(virtualHost, property.getHost(), property.getPort());
-            SimpleRabbitListenerContainerFactory simpleRabbitListenerContainerFactoryBeanDef = createSimpleRabbitListenerContainerFactoryBean(property, connectionFactory);
+            SimpleRabbitListenerContainerFactory simpleRabbitListenerContainerFactoryBeanDef = rabbitComponentsFactory.createSimpleRabbitListenerContainerFactoryBean(property, connectionFactory);
             beanFactory.registerSingleton(listenerContainerFactoryBeanName, simpleRabbitListenerContainerFactoryBeanDef);
             log.info("SimpleRabbitListenerContainerFactory Bean with name {} was created for the event {} and virtual host {}",
                     listenerContainerFactoryBeanName, property.getEventName(), virtualHost);
 
-            RabbitAdmin beanDefinitionRabbitAdmin = createRabbitAdminBean(connectionFactory);
+            RabbitAdmin beanDefinitionRabbitAdmin = rabbitComponentsFactory.createRabbitAdminBean(connectionFactory);
             String rabbitAdminBeanName = RabbitBeanNameResolver.getRabbitAdminBeanName(virtualHost, property.getHost(), property.getPort());
             beanFactory.registerSingleton(rabbitAdminBeanName, beanDefinitionRabbitAdmin);
             log.info("RabbitAdmin Bean with name {} was created for the event {} and virtual host {}",
                     rabbitAdminBeanName, property.getEventName(), virtualHost);
 
-            RabbitTemplate beanDefinitionRabbitTemplate = createRabbitTemplateBean(connectionFactory, property);
+            RabbitTemplate beanDefinitionRabbitTemplate = rabbitComponentsFactory.createRabbitTemplateBean(connectionFactory, property);
             String rabbitTemplateBeanName = RabbitBeanNameResolver.getRabbitTemplateBeanName(virtualHost, property.getHost(), property.getPort());
             beanFactory.registerSingleton(rabbitTemplateBeanName, beanDefinitionRabbitTemplate);
             log.info("RabbitTemplate Bean with name {} was created for the event {} and virtual host {}",
@@ -270,56 +268,6 @@ public class TunedRabbitAutoConfiguration {
         if (properties.isAutoCreate() || (properties.isAutoCreateOnlyForTest() && isTestProfile())) {
             autoCreateQueues(properties, rabbitAdmin);
         }
-    }
-
-    private CachingConnectionFactory createConnectionsFactoryBean(final TunedRabbitProperties property, String virtualHost) {
-        try {
-            com.rabbitmq.client.ConnectionFactory factory = new com.rabbitmq.client.ConnectionFactory();
-            if (!property.isSslConnection()) {
-                factory.setUsername(property.getUsername());
-                factory.setPassword(property.getPassword());
-            } else {
-                factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
-                factory.useSslProtocol(TLSContextUtil.tls12ContextFromPKCS12(property.getTlsKeystoreLocation().getInputStream(),
-                        property.getTlsKeystorePassword().toCharArray()));
-            }
-
-            factory.setHost(property.getHost());
-            factory.setPort(property.getPort());
-            factory.setAutomaticRecoveryEnabled(property.isAutomaticRecovery());
-            Optional.ofNullable(property.getVirtualHost()).ifPresent(factory::setVirtualHost);
-
-            return new CachingConnectionFactory(factory);
-        } catch (Exception e) {
-            log.error(String.format("It is not possible create a Connection Factory to Virtual Host %s", virtualHost), e);
-            return null;
-        }
-    }
-
-    private SimpleRabbitListenerContainerFactory createSimpleRabbitListenerContainerFactoryBean(
-            final TunedRabbitProperties property, CachingConnectionFactory connectionFactory) {
-        SimpleRabbitListenerContainerFactory simpleRabbitListenerContainerFactory = new SimpleRabbitListenerContainerFactory();
-        simpleRabbitListenerContainerFactory.setConnectionFactory(connectionFactory);
-        simpleRabbitListenerContainerFactory.setConcurrentConsumers(property.getConcurrentConsumers());
-        simpleRabbitListenerContainerFactory.setMaxConcurrentConsumers(property.getMaxConcurrentConsumers());
-        if (property.isEnableJsonMessageConverter()) {
-            simpleRabbitListenerContainerFactory.setMessageConverter(producerJackson2MessageConverter());
-        } else {
-            simpleRabbitListenerContainerFactory.setMessageConverter(new SimpleMessageConverter());
-        }
-        return simpleRabbitListenerContainerFactory;
-    }
-
-    private RabbitAdmin createRabbitAdminBean(CachingConnectionFactory connectionFactory) {
-        return new RabbitAdmin(connectionFactory);
-    }
-
-    private RabbitTemplate createRabbitTemplateBean(CachingConnectionFactory connectionFactory, final TunedRabbitProperties property) {
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        if (property.isEnableJsonMessageConverter()) {
-            rabbitTemplate.setMessageConverter(producerJackson2MessageConverter());
-        }
-        return rabbitTemplate;
     }
 
     private void autoCreateQueues(TunedRabbitProperties properties, RabbitAdmin rabbitAdmin) {

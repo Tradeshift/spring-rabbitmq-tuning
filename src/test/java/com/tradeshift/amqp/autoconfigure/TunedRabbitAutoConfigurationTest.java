@@ -24,6 +24,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.tradeshift.amqp.rabbit.components.RabbitComponentsFactory;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitPropertiesMap;
 import com.tradeshift.amqp.resolvers.RabbitBeanNameResolver;
@@ -39,14 +40,14 @@ public class TunedRabbitAutoConfigurationTest {
 
     @Autowired
     private ConfigurableListableBeanFactory beanFactory;
-
+    
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setup() {
         initMocks(this);
-        tradeshiftRabbitAutoConfiguration = new TunedRabbitAutoConfiguration(context, beanFactory);
+        tradeshiftRabbitAutoConfiguration = new TunedRabbitAutoConfiguration(context, beanFactory, new RabbitComponentsFactory());
     }
 
     @Test

@@ -16,6 +16,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.tradeshift.amqp.autoconfigure.TunedRabbitAutoConfiguration;
+import com.tradeshift.amqp.rabbit.components.RabbitComponentsFactory;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitPropertiesMap;
 
@@ -30,7 +31,7 @@ public class RabbitAdminHandlerTest {
 
     @Autowired
     private ConfigurableListableBeanFactory beanFactory;
-
+    
     private RabbitAdminHandler rabbitAdminHandler;
 
     @Rule
@@ -39,7 +40,7 @@ public class RabbitAdminHandlerTest {
     @Before
     public void setup() {
         initMocks(this);
-        tradeshiftRabbitAutoConfiguration = new TunedRabbitAutoConfiguration(context, beanFactory);
+        tradeshiftRabbitAutoConfiguration = new TunedRabbitAutoConfiguration(context, beanFactory, new RabbitComponentsFactory());
     }
 
     @Test
