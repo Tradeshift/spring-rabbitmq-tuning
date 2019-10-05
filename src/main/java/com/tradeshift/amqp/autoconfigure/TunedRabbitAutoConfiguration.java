@@ -269,55 +269,6 @@ public class TunedRabbitAutoConfiguration {
         }
     }
 
-    private CachingConnectionFactory createConnectionsFactoryBean(final TunedRabbitProperties property, String virtualHost) {
-        try {
-            com.rabbitmq.client.ConnectionFactory factory = new com.rabbitmq.client.ConnectionFactory();
-            if (!property.isSslConnection()) {
-                factory.setUsername(property.getUsername());
-                factory.setPassword(property.getPassword());
-            } else {
-                factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
-                factory.useSslProtocol(TLSContextUtil.tls12ContextFromPKCS12(property.getTlsKeystoreLocation().getInputStream(),
-                        property.getTlsKeystorePassword().toCharArray()));
-            }
-
-            factory.setHost(property.getHost());
-            factory.setPort(property.getPort());
-            factory.setAutomaticRecoveryEnabled(property.isAutomaticRecovery());
-            Optional.ofNullable(property.getVirtualHost()).ifPresent(factory::setVirtualHost);
-
-            return new CachingConnectionFactory(factory);
-        } catch (Exception e) {
-            log.error(String.format("It is not possible create a Connection Factory to Virtual Host %s", virtualHost), e);
-            return null;
-        }
-    }
-
-    private SimpleRabbitListenerContainerFactory createSimpleRabbitListenerContainerFactoryBean(
-            final TunedRabbitProperties property, CachingConnectionFactory connectionFactory) {
-        SimpleRabbitListenerContainerFactory simpleRabbitListenerContainerFactory = new SimpleRabbitListenerContainerFactory();
-        simpleRabbitListenerContainerFactory.setConnectionFactory(connectionFactory);
-        simpleRabbitListenerContainerFactory.setConcurrentConsumers(property.getConcurrentConsumers());
-        simpleRabbitListenerContainerFactory.setMaxConcurrentConsumers(property.getMaxConcurrentConsumers());
-        if (property.isEnableJsonMessageConverter()) {
-            simpleRabbitListenerContainerFactory.setMessageConverter(producerJackson2MessageConverter());
-        } else {
-            simpleRabbitListenerContainerFactory.setMessageConverter(new SimpleMessageConverter());
-        }
-        return simpleRabbitListenerContainerFactory;
-    }
-
-    private RabbitAdmin createRabbitAdminBean(CachingConnectionFactory connectionFactory) {
-        return new RabbitAdmin(connectionFactory);
-    }
-
-    private RabbitTemplate createRabbitTemplateBean(CachingConnectionFactory connectionFactory, final TunedRabbitProperties property) {
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        if (property.isEnableJsonMessageConverter()) {
-            rabbitTemplate.setMessageConverter(producerJackson2MessageConverter());
-        }
-    }
-
     private void autoCreateQueues(TunedRabbitProperties properties, RabbitAdmin rabbitAdmin) {
         log.info("Declaring binding for exchange '{}', queue '{}' and routing key '{}'", properties.getExchange(), properties.getQueue(), properties.getQueueRoutingKey());
         

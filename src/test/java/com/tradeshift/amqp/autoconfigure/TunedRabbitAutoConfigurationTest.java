@@ -55,16 +55,13 @@ public class TunedRabbitAutoConfigurationTest {
     @Autowired
     private ConfigurableListableBeanFactory beanFactory;
     
-    @Spy
-    private RabbitComponentsFactory rabbitComponentsFactory;
-    
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setup() {
         initMocks(this);
-        tradeshiftRabbitAutoConfiguration = new TunedRabbitAutoConfiguration(context, beanFactory, rabbitComponentsFactory);
+        tradeshiftRabbitAutoConfiguration = new TunedRabbitAutoConfiguration(context, beanFactory, new RabbitComponentsFactory());
     }
 
     @Test
