@@ -1,16 +1,30 @@
 package com.tradeshift.amqp.autoconfigure;
 
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Spy;
+import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -41,13 +55,16 @@ public class TunedRabbitAutoConfigurationTest {
     @Autowired
     private ConfigurableListableBeanFactory beanFactory;
     
+    @Spy
+    private RabbitComponentsFactory rabbitComponentsFactory;
+    
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setup() {
         initMocks(this);
-        tradeshiftRabbitAutoConfiguration = new TunedRabbitAutoConfiguration(context, beanFactory, new RabbitComponentsFactory());
+        tradeshiftRabbitAutoConfiguration = new TunedRabbitAutoConfiguration(context, beanFactory, rabbitComponentsFactory);
     }
 
     @Test
@@ -488,6 +505,97 @@ public class TunedRabbitAutoConfigurationTest {
         assertEquals(1, context.getBeansOfType(RabbitTemplate.class).size());
         assertEquals(1, context.getBeansOfType(RabbitAdmin.class).size());
         assertEquals(1, context.getBeansOfType(SimpleRabbitListenerContainerFactory.class).size());
+    }
+    
+    @Test
+    public void should_create_binding_for_one_event() {
+    	
+    	TunedRabbitPropertiesMap rabbitCustomPropertiesMap = new TunedRabbitPropertiesMap();
+    	TunedRabbitProperties eventProperties = createQueueProperties(true);
+    	eventProperties.setAutoCreate(true);
+    	rabbitCustomPropertiesMap.put("some-event", eventProperties);
+
+    	RabbitAdmin rabbitAdmin = mock(RabbitAdmin.class);
+
+    	doReturn(rabbitAdmin).when(rabbitComponentsFactory).createRabbitAdminBean(any());
+
+    	tradeshiftRabbitAutoConfiguration.routingConnectionFactory(rabbitCustomPropertiesMap);
+
+    	// Validate the single exchange
+    	ArgumentCaptor<Exchange> exchangeArgumentCaptor = ArgumentCaptor.forClass(Exchange.class);
+    	verify(rabbitAdmin).declareExchange(exchangeArgumentCaptor.capture());
+    	assertThat(exchangeArgumentCaptor.getValue().getName(), is("ex.test"));
+
+    	// Validate all the queues
+    	ArgumentCaptor<Queue> queueArgumentCaptor = ArgumentCaptor.forClass(Queue.class);
+    	verify(rabbitAdmin, times(3)).declareQueue(queueArgumentCaptor.capture());
+    	List<String> queuesNames = queueArgumentCaptor.getAllValues().stream()
+    			.map(Queue::getName)
+    			.collect(toList());
+    	assertThat(queuesNames, hasItems("queue.test", "queue.test.dlq", "queue.test.retry"));
+    }
+    
+    @Test
+    public void should_not_create_binding_for_retry_and_dlq_when_disabled() {
+    	
+    	TunedRabbitPropertiesMap rabbitCustomPropertiesMap = new TunedRabbitPropertiesMap();
+    	TunedRabbitProperties eventProperties = createQueueProperties(true);
+    	eventProperties.setAutoCreate(true);
+    	eventProperties.setAutoCreateForRetryDlq(false);
+    	rabbitCustomPropertiesMap.put("some-event", eventProperties);
+
+    	RabbitAdmin rabbitAdmin = mock(RabbitAdmin.class);
+
+    	doReturn(rabbitAdmin).when(rabbitComponentsFactory).createRabbitAdminBean(any());
+
+    	tradeshiftRabbitAutoConfiguration.routingConnectionFactory(rabbitCustomPropertiesMap);
+
+    	// Validate the single exchange
+    	ArgumentCaptor<Exchange> exchangeArgumentCaptor = ArgumentCaptor.forClass(Exchange.class);
+    	verify(rabbitAdmin).declareExchange(exchangeArgumentCaptor.capture());
+    	assertThat(exchangeArgumentCaptor.getValue().getName(), is("ex.test"));
+
+    	// Validate all the queues
+    	ArgumentCaptor<Queue> queueArgumentCaptor = ArgumentCaptor.forClass(Queue.class);
+    	verify(rabbitAdmin).declareQueue(queueArgumentCaptor.capture());
+    	assertThat(queueArgumentCaptor.getValue().getName(), is("queue.test"));
+    }
+
+    @Test
+    public void should_create_binding_for_all_events() {
+
+    	TunedRabbitPropertiesMap rabbitCustomPropertiesMap = new TunedRabbitPropertiesMap();
+    	TunedRabbitProperties eventProperties = createQueueProperties(true);
+    	eventProperties.setAutoCreate(true);
+    	rabbitCustomPropertiesMap.put("some-event", eventProperties);
+
+    	eventProperties = createQueueProperties(false);
+    	eventProperties.setAutoCreate(true);
+    	eventProperties.setQueue("queue2.test");
+    	eventProperties.setExchange("exchange2.test");
+    	rabbitCustomPropertiesMap.put("some-event2", eventProperties);
+
+    	RabbitAdmin rabbitAdmin = mock(RabbitAdmin.class);
+
+    	doReturn(rabbitAdmin).when(rabbitComponentsFactory).createRabbitAdminBean(any());
+
+    	tradeshiftRabbitAutoConfiguration.routingConnectionFactory(rabbitCustomPropertiesMap);
+
+    	// Validate the two exchanges
+    	ArgumentCaptor<Exchange> exchangeArgumentCaptor = ArgumentCaptor.forClass(Exchange.class);
+    	verify(rabbitAdmin, times(2)).declareExchange(exchangeArgumentCaptor.capture());
+    	List<String> exchangesNames = exchangeArgumentCaptor.getAllValues().stream()
+    			.map(Exchange::getName)
+    			.collect(toList());
+    	assertThat(exchangesNames, hasItems("ex.test", "exchange2.test"));
+
+    	ArgumentCaptor<Queue> queueArgumentCaptor = ArgumentCaptor.forClass(Queue.class);
+    	verify(rabbitAdmin, times(6)).declareQueue(queueArgumentCaptor.capture());
+    	List<String> queuesNames = queueArgumentCaptor.getAllValues().stream()
+    			.map(Queue::getName)
+    			.collect(toList());
+    	assertThat(queuesNames, hasItems("queue.test", "queue.test.dlq", "queue.test.retry",
+    			"queue2.test", "queue2.test.dlq", "queue2.test.retry"));
     }
 
     private TunedRabbitProperties createQueueProperties(boolean primary) {
