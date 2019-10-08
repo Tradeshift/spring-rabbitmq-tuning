@@ -1,4 +1,4 @@
-package com.tradeshift.amqp.constants;
+package com.tradeshift.amqp.log;
 
 public class TunedRabbitConstants {
 

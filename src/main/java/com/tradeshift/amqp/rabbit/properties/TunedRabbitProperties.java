@@ -63,7 +63,7 @@ public class TunedRabbitProperties {
 
     private String rabbitTemplateBeanName;
 
-    private boolean enableRetryMessageLog = true;
+    private boolean enableLogs = true;
 
     public TunedRabbitProperties() {
         // Do nothing because this is a empty constructor
@@ -305,11 +305,11 @@ public class TunedRabbitProperties {
         return enableSnakeCaseForQueuesAndExchangeNames ? string.replace('.', '_') : string.replace('_', '.');
     }
 
-    public void setEnableRetryMessageLog(final boolean enableRetryMessageLog) {
-        this.enableRetryMessageLog = enableRetryMessageLog;
+    public boolean isEnableLogs() {
+        return enableLogs;
     }
 
-    public boolean isEnableRetryMessageLog() {
-        return enableRetryMessageLog;
+    public void setEnableLogs(boolean enableLogs) {
+        this.enableLogs = enableLogs;
     }
 }

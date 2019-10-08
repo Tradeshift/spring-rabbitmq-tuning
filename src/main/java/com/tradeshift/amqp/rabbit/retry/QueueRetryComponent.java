@@ -12,13 +12,15 @@ import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.tradeshift.amqp.annotation.EnableRabbitRetryAndDlqAspect;
+import com.tradeshift.amqp.log.TunedLogger;
 import com.tradeshift.amqp.rabbit.handlers.RabbitTemplateHandler;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
 
 @Component
 public class QueueRetryComponent {
 
-    private static final Logger log = LoggerFactory.getLogger(QueueRetryComponent.class);
+    private static final TunedLogger log = TunedLogger.init(QueueRetryComponent.class);
 
     private static final String X_DEATH = "x-death";
 
@@ -43,17 +45,13 @@ public class QueueRetryComponent {
         message.getMessageProperties()
                 .setExpiration(String.valueOf(calculateTtl(properties.getTtlRetryMessage(), qtdRetry, properties.getTtlMultiply())));
         rabbitTemplateHandler.getRabbitTemplate(properties).send(properties.getExchange(), properties.getQueueRetry(), message);
-        if (properties.isEnableRetryMessageLog()) {
-            log.info("M=sendToRetry, Message={}", message);
-        }
+        log.info(properties, "M=sendToRetry, Message={}", message);
     }
 
     public void sendToDlq(final Message message, final TunedRabbitProperties properties) {
         message.getMessageProperties().getHeaders().remove(X_DEATH);
         rabbitTemplateHandler.getRabbitTemplate(properties).send(properties.getExchange(), properties.getQueueDlq(), message);
-        if (properties.isEnableRetryMessageLog()) {
-            log.info("M=sendToDlq, Message={}", message);
-        }
+        log.info(properties, "M=sendToDlq, Message={}", message);
     }
 
     public int countDeath(final Message message) {
