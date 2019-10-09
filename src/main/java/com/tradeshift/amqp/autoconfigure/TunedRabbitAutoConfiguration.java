@@ -45,6 +45,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
@@ -55,6 +56,7 @@ import org.springframework.context.annotation.Primary;
 @ConditionalOnClass({RabbitTemplate.class, Channel.class})
 @AutoConfigureBefore(RabbitAutoConfiguration.class)
 @Import({TunedRabbitAutoConfiguration.RabbitPostProcessorConfiguration.class})
+@ComponentScan(basePackageClasses = RabbitComponentsFactory.class)
 public class TunedRabbitAutoConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(TunedRabbitAutoConfiguration.class);
