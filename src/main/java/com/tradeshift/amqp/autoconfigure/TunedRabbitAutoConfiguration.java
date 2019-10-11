@@ -45,7 +45,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
@@ -56,7 +55,6 @@ import org.springframework.context.annotation.Primary;
 @ConditionalOnClass({RabbitTemplate.class, Channel.class})
 @AutoConfigureBefore(RabbitAutoConfiguration.class)
 @Import({TunedRabbitAutoConfiguration.RabbitPostProcessorConfiguration.class})
-@ComponentScan(basePackageClasses = RabbitComponentsFactory.class)
 public class TunedRabbitAutoConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(TunedRabbitAutoConfiguration.class);
@@ -65,14 +63,11 @@ public class TunedRabbitAutoConfiguration {
 
     private final ApplicationContext applicationContext;
     private final ConfigurableListableBeanFactory beanFactory;
-	private final RabbitComponentsFactory rabbitComponentsFactory;
 
     @Autowired
-    public TunedRabbitAutoConfiguration(ApplicationContext applicationContext, ConfigurableListableBeanFactory beanFactory,
-    		RabbitComponentsFactory rabbitComponentsFactory) {
+    public TunedRabbitAutoConfiguration(ApplicationContext applicationContext, ConfigurableListableBeanFactory beanFactory) {
         this.applicationContext = applicationContext;
         this.beanFactory = beanFactory;
-		this.rabbitComponentsFactory = rabbitComponentsFactory;
     }
 
     @ConditionalOnProperty(
@@ -100,7 +95,7 @@ public class TunedRabbitAutoConfiguration {
             return new TunedRabbitListenerAnnotationBeanPostProcessor();
         }
     }
-
+    
     @Bean
     @ConditionalOnProperty(
             value = "spring.rabbitmq.enable.custom.autoconfiguration",
@@ -149,13 +144,19 @@ public class TunedRabbitAutoConfiguration {
         return new EnableRabbitRetryAndDlqAspect(queueRetryComponent(rabbitCustomPropertiesMap), rabbitCustomPropertiesMap);
     }
 
+    @Bean
+    public RabbitComponentsFactory rabbitComponentsFactory() {
+    	return new RabbitComponentsFactory();
+    }
+
     @ConditionalOnProperty(
             value = "spring.rabbitmq.enable.custom.autoconfiguration",
             havingValue = "true",
             matchIfMissing = true)
     @Bean
+    @DependsOn("rabbitComponentsFactory")
     public MessageConverter producerJackson2MessageConverter() {
-        return rabbitComponentsFactory.createJackson2MessageConverter();
+        return rabbitComponentsFactory().createJackson2MessageConverter();
     }
 
     @ConditionalOnProperty(
@@ -164,7 +165,7 @@ public class TunedRabbitAutoConfiguration {
             matchIfMissing = true)
     @Primary
     @Bean(TunedRabbitConstants.CONNECTION_FACTORY_BEAN_NAME)
-    @DependsOn("producerJackson2MessageConverter")
+    @DependsOn({ "producerJackson2MessageConverter", "rabbitComponentsFactory" })
     public ConnectionFactory routingConnectionFactory(TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
         validateSinglePrimaryConnection(rabbitCustomPropertiesMap);
 
@@ -190,7 +191,7 @@ public class TunedRabbitAutoConfiguration {
             first.ifPresent(defaultConnectionFactory::set);
         }
 
-        return rabbitComponentsFactory.createSimpleRoutingConnectionFactory(defaultConnectionFactory, connectionFactoryHashMap);
+        return rabbitComponentsFactory().createSimpleRoutingConnectionFactory(defaultConnectionFactory, connectionFactoryHashMap);
     }
 
     private void validateSinglePrimaryConnection(TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
@@ -219,8 +220,10 @@ public class TunedRabbitAutoConfiguration {
     }
 
     private void applyAutoConfiguration(final TunedRabbitProperties property) {
-        final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(property.getVirtualHost());
-        CachingConnectionFactory connectionsFactoryBean = rabbitComponentsFactory.createCachingConnectionFactory(property, virtualHost);
+    	final RabbitComponentsFactory rabbitComponentsFactory = rabbitComponentsFactory();
+
+    	final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(property.getVirtualHost());
+    	CachingConnectionFactory connectionsFactoryBean = rabbitComponentsFactory .createCachingConnectionFactory(property, virtualHost);
         
         Optional.ofNullable(connectionsFactoryBean).ifPresent(connectionFactory -> {
             String connectionFactoryBeanName = RabbitBeanNameResolver.getConnectionFactoryBeanName(virtualHost, property.getHost(), property.getPort());
