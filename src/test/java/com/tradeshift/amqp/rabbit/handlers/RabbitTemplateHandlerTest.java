@@ -43,7 +43,7 @@ public class RabbitTemplateHandlerTest {
 
     @Autowired
     private ConfigurableListableBeanFactory beanFactory;
-
+    
     private RabbitTemplateHandler rabbitTemplateHandler;
 
     @Rule

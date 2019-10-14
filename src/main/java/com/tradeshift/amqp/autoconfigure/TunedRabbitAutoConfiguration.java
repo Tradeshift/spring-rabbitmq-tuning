@@ -1,17 +1,16 @@
 package com.tradeshift.amqp.autoconfigure;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DefaultSaslConfig;
 import com.tradeshift.amqp.annotation.EnableRabbitRetryAndDlqAspect;
 import com.tradeshift.amqp.log.TunedRabbitConstants;
 import com.tradeshift.amqp.rabbit.annotation.TunedRabbitListenerAnnotationBeanPostProcessor;
+import com.tradeshift.amqp.rabbit.components.RabbitComponentsFactory;
 import com.tradeshift.amqp.rabbit.handlers.RabbitAdminHandler;
 import com.tradeshift.amqp.rabbit.handlers.RabbitTemplateHandler;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitPropertiesMap;
 import com.tradeshift.amqp.rabbit.retry.QueueRetryComponent;
 import com.tradeshift.amqp.resolvers.RabbitBeanNameResolver;
-import com.tradeshift.amqp.ssl.TLSContextUtil;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,12 +33,9 @@ import org.springframework.amqp.rabbit.config.RabbitListenerConfigUtils;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.connection.SimpleRoutingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.amqp.support.converter.SimpleMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -99,7 +95,7 @@ public class TunedRabbitAutoConfiguration {
             return new TunedRabbitListenerAnnotationBeanPostProcessor();
         }
     }
-
+    
     @Bean
     @ConditionalOnProperty(
             value = "spring.rabbitmq.enable.custom.autoconfiguration",
@@ -148,13 +144,19 @@ public class TunedRabbitAutoConfiguration {
         return new EnableRabbitRetryAndDlqAspect(queueRetryComponent(rabbitCustomPropertiesMap), rabbitCustomPropertiesMap);
     }
 
+    @Bean
+    public RabbitComponentsFactory rabbitComponentsFactory() {
+    	return new RabbitComponentsFactory();
+    }
+
     @ConditionalOnProperty(
             value = "spring.rabbitmq.enable.custom.autoconfiguration",
             havingValue = "true",
             matchIfMissing = true)
     @Bean
+    @DependsOn("rabbitComponentsFactory")
     public MessageConverter producerJackson2MessageConverter() {
-        return new Jackson2JsonMessageConverter();
+        return rabbitComponentsFactory().createJackson2MessageConverter();
     }
 
     @ConditionalOnProperty(
@@ -163,7 +165,7 @@ public class TunedRabbitAutoConfiguration {
             matchIfMissing = true)
     @Primary
     @Bean(TunedRabbitConstants.CONNECTION_FACTORY_BEAN_NAME)
-    @DependsOn("producerJackson2MessageConverter")
+    @DependsOn({ "producerJackson2MessageConverter", "rabbitComponentsFactory" })
     public ConnectionFactory routingConnectionFactory(TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
         validateSinglePrimaryConnection(rabbitCustomPropertiesMap);
 
@@ -189,10 +191,7 @@ public class TunedRabbitAutoConfiguration {
             first.ifPresent(defaultConnectionFactory::set);
         }
 
-        SimpleRoutingConnectionFactory connectionFactory = new SimpleRoutingConnectionFactory();
-        connectionFactory.setTargetConnectionFactories(connectionFactoryHashMap);
-        connectionFactory.setDefaultTargetConnectionFactory(defaultConnectionFactory.get());
-        return connectionFactory;
+        return rabbitComponentsFactory().createSimpleRoutingConnectionFactory(defaultConnectionFactory, connectionFactoryHashMap);
     }
 
     private void validateSinglePrimaryConnection(TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
@@ -212,6 +211,8 @@ public class TunedRabbitAutoConfiguration {
             applyAutoConfiguration(property);
         } else if (!virtualHosts.contains(virtualHost)) {
             applyAutoConfiguration(property);
+        } else {
+        	applyAutoConfigurationOnlyForBinding(property);
         }
 
         return (CachingConnectionFactory) applicationContext.getBean(RabbitBeanNameResolver
@@ -219,8 +220,11 @@ public class TunedRabbitAutoConfiguration {
     }
 
     private void applyAutoConfiguration(final TunedRabbitProperties property) {
-        final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(property.getVirtualHost());
-        CachingConnectionFactory connectionsFactoryBean = createConnectionsFactoryBean(property, virtualHost);
+    	final RabbitComponentsFactory rabbitComponentsFactory = rabbitComponentsFactory();
+
+    	final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(property.getVirtualHost());
+    	CachingConnectionFactory connectionsFactoryBean = rabbitComponentsFactory .createCachingConnectionFactory(property, virtualHost);
+        
         Optional.ofNullable(connectionsFactoryBean).ifPresent(connectionFactory -> {
             String connectionFactoryBeanName = RabbitBeanNameResolver.getConnectionFactoryBeanName(virtualHost, property.getHost(), property.getPort());
             beanFactory.registerSingleton(connectionFactoryBeanName, connectionFactory);
@@ -228,18 +232,18 @@ public class TunedRabbitAutoConfiguration {
                     connectionFactoryBeanName, property.getEventName(), virtualHost);
 
             String listenerContainerFactoryBeanName = RabbitBeanNameResolver.getSimpleRabbitListenerContainerFactoryBean(virtualHost, property.getHost(), property.getPort());
-            SimpleRabbitListenerContainerFactory simpleRabbitListenerContainerFactoryBeanDef = createSimpleRabbitListenerContainerFactoryBean(property, connectionFactory);
+            SimpleRabbitListenerContainerFactory simpleRabbitListenerContainerFactoryBeanDef = rabbitComponentsFactory.createSimpleRabbitListenerContainerFactoryBean(property, connectionFactory);
             beanFactory.registerSingleton(listenerContainerFactoryBeanName, simpleRabbitListenerContainerFactoryBeanDef);
             log.info("SimpleRabbitListenerContainerFactory Bean with name {} was created for the event {} and virtual host {}",
                     listenerContainerFactoryBeanName, property.getEventName(), virtualHost);
 
-            RabbitAdmin beanDefinitionRabbitAdmin = createRabbitAdminBean(connectionFactory);
+            RabbitAdmin beanDefinitionRabbitAdmin = rabbitComponentsFactory.createRabbitAdminBean(connectionFactory);
             String rabbitAdminBeanName = RabbitBeanNameResolver.getRabbitAdminBeanName(virtualHost, property.getHost(), property.getPort());
             beanFactory.registerSingleton(rabbitAdminBeanName, beanDefinitionRabbitAdmin);
             log.info("RabbitAdmin Bean with name {} was created for the event {} and virtual host {}",
                     rabbitAdminBeanName, property.getEventName(), virtualHost);
 
-            RabbitTemplate beanDefinitionRabbitTemplate = createRabbitTemplateBean(connectionFactory, property);
+            RabbitTemplate beanDefinitionRabbitTemplate = rabbitComponentsFactory.createRabbitTemplateBean(connectionFactory, property);
             String rabbitTemplateBeanName = RabbitBeanNameResolver.getRabbitTemplateBeanName(virtualHost, property.getHost(), property.getPort());
             beanFactory.registerSingleton(rabbitTemplateBeanName, beanDefinitionRabbitTemplate);
             log.info("RabbitTemplate Bean with name {} was created for the event {} and virtual host {}",
@@ -252,58 +256,27 @@ public class TunedRabbitAutoConfiguration {
             }
         });
     }
+    
+    /**
+     * Apply the auto configuration to create the binding between exchange and queue.
+     * It tries to recover the ConnectionFactory and RabbitAdmin from bean factory.
+     */
+    private void applyAutoConfigurationOnlyForBinding(final TunedRabbitProperties properties) {
+    	final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(properties.getVirtualHost());
 
-    private CachingConnectionFactory createConnectionsFactoryBean(final TunedRabbitProperties property, String virtualHost) {
-        try {
-            com.rabbitmq.client.ConnectionFactory factory = new com.rabbitmq.client.ConnectionFactory();
-            if (!property.isSslConnection()) {
-                factory.setUsername(property.getUsername());
-                factory.setPassword(property.getPassword());
-            } else {
-                factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
-                factory.useSslProtocol(TLSContextUtil.tls12ContextFromPKCS12(property.getTlsKeystoreLocation().getInputStream(),
-                        property.getTlsKeystorePassword().toCharArray()));
-            }
+    	String rabbitAdminBeanName = RabbitBeanNameResolver.getRabbitAdminBeanName(virtualHost, properties.getHost(), properties.getPort());
+    	log.info("Getting RabbitAdmin Bean with name {} for the event {} and virtual host {}",
+                rabbitAdminBeanName, properties.getEventName(), virtualHost);
+    	RabbitAdmin rabbitAdmin = beanFactory.getBean(rabbitAdminBeanName, RabbitAdmin.class);
 
-            factory.setHost(property.getHost());
-            factory.setPort(property.getPort());
-            factory.setAutomaticRecoveryEnabled(property.isAutomaticRecovery());
-            Optional.ofNullable(property.getVirtualHost()).ifPresent(factory::setVirtualHost);
-
-            return new CachingConnectionFactory(factory);
-        } catch (Exception e) {
-            log.error(String.format("It is not possible create a Connection Factory to Virtual Host %s", virtualHost), e);
-            return null;
+        if (properties.isAutoCreate() || (properties.isAutoCreateOnlyForTest() && isTestProfile())) {
+            autoCreateQueues(properties, rabbitAdmin);
         }
-    }
-
-    private SimpleRabbitListenerContainerFactory createSimpleRabbitListenerContainerFactoryBean(
-            final TunedRabbitProperties property, CachingConnectionFactory connectionFactory) {
-        SimpleRabbitListenerContainerFactory simpleRabbitListenerContainerFactory = new SimpleRabbitListenerContainerFactory();
-        simpleRabbitListenerContainerFactory.setConnectionFactory(connectionFactory);
-        simpleRabbitListenerContainerFactory.setConcurrentConsumers(property.getConcurrentConsumers());
-        simpleRabbitListenerContainerFactory.setMaxConcurrentConsumers(property.getMaxConcurrentConsumers());
-        if (property.isEnableJsonMessageConverter()) {
-            simpleRabbitListenerContainerFactory.setMessageConverter(producerJackson2MessageConverter());
-        } else {
-            simpleRabbitListenerContainerFactory.setMessageConverter(new SimpleMessageConverter());
-        }
-        return simpleRabbitListenerContainerFactory;
-    }
-
-    private RabbitAdmin createRabbitAdminBean(CachingConnectionFactory connectionFactory) {
-        return new RabbitAdmin(connectionFactory);
-    }
-
-    private RabbitTemplate createRabbitTemplateBean(CachingConnectionFactory connectionFactory, final TunedRabbitProperties property) {
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        if (property.isEnableJsonMessageConverter()) {
-            rabbitTemplate.setMessageConverter(producerJackson2MessageConverter());
-        }
-        return rabbitTemplate;
     }
 
     private void autoCreateQueues(TunedRabbitProperties properties, RabbitAdmin rabbitAdmin) {
+        log.info("Declaring binding for exchange '{}', queue '{}' and routing key '{}'", properties.getExchange(), properties.getQueue(), properties.getQueueRoutingKey());
+        
         Exchange exchange = new TopicExchange(properties.getExchange(), true, false);
 
         if ("direct".equals(properties.getExchangeType())) {

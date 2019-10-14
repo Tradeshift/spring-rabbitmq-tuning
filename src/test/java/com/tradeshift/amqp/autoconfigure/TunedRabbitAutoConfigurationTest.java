@@ -39,7 +39,7 @@ public class TunedRabbitAutoConfigurationTest {
 
     @Autowired
     private ConfigurableListableBeanFactory beanFactory;
-
+    
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
@@ -488,7 +488,7 @@ public class TunedRabbitAutoConfigurationTest {
         assertEquals(1, context.getBeansOfType(RabbitAdmin.class).size());
         assertEquals(1, context.getBeansOfType(SimpleRabbitListenerContainerFactory.class).size());
     }
-
+    
     private TunedRabbitProperties createQueueProperties(boolean primary) {
         return createQueueProperties(primary, null);
     }

@@ -30,7 +30,7 @@ public class RabbitAdminHandlerTest {
 
     @Autowired
     private ConfigurableListableBeanFactory beanFactory;
-
+    
     private RabbitAdminHandler rabbitAdminHandler;
 
     @Rule
