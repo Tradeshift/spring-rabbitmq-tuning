@@ -1,17 +1,18 @@
 package com.tradeshift.amqp.autoconfigure;
 
-import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import com.tradeshift.amqp.rabbit.components.QueueFactory;
+import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
 
-public class QueueCreatorTest {
+public class QueueFactoryTest {
 
     private TunedRabbitProperties queueProperties;
 
@@ -39,8 +40,8 @@ public class QueueCreatorTest {
 
         RabbitAdmin rabbitAdminMock = Mockito.mock(RabbitAdmin.class);
 
-        QueueCreator queueCreator = new QueueCreator(queueProperties, rabbitAdminMock);
-        queueCreator.create();
+        QueueFactory queueFactory = new QueueFactory(queueProperties, rabbitAdminMock);
+        queueFactory.create();
 
         verify(rabbitAdminMock, times(1)).declareExchange(any(FanoutExchange.class));
         verify(rabbitAdminMock, times(1)).declareQueue(any(Queue.class));
@@ -54,8 +55,8 @@ public class QueueCreatorTest {
 
         RabbitAdmin rabbitAdminMock = Mockito.mock(RabbitAdmin.class);
 
-        QueueCreator queueCreator = new QueueCreator(queueProperties, rabbitAdminMock);
-        queueCreator.create();
+        QueueFactory queueFactory = new QueueFactory(queueProperties, rabbitAdminMock);
+        queueFactory.create();
 
         verify(rabbitAdminMock, times(1)).declareExchange(any(TopicExchange.class));
         verify(rabbitAdminMock, times(3)).declareQueue(any(Queue.class));
@@ -69,8 +70,8 @@ public class QueueCreatorTest {
 
         RabbitAdmin rabbitAdminMock = Mockito.mock(RabbitAdmin.class);
 
-        QueueCreator queueCreator = new QueueCreator(queueProperties, rabbitAdminMock);
-        queueCreator.create();
+        QueueFactory queueFactory = new QueueFactory(queueProperties, rabbitAdminMock);
+        queueFactory.create();
 
         verify(rabbitAdminMock, times(1)).declareExchange(any(DirectExchange.class));
         verify(rabbitAdminMock, times(3)).declareQueue(any(Queue.class));

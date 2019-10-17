@@ -4,6 +4,7 @@ import com.rabbitmq.client.Channel;
 import com.tradeshift.amqp.annotation.EnableRabbitRetryAndDlqAspect;
 import com.tradeshift.amqp.log.TunedRabbitConstants;
 import com.tradeshift.amqp.rabbit.annotation.TunedRabbitListenerAnnotationBeanPostProcessor;
+import com.tradeshift.amqp.rabbit.components.QueueFactory;
 import com.tradeshift.amqp.rabbit.components.RabbitComponentsFactory;
 import com.tradeshift.amqp.rabbit.handlers.RabbitAdminHandler;
 import com.tradeshift.amqp.rabbit.handlers.RabbitTemplateHandler;
@@ -216,7 +217,7 @@ public class TunedRabbitAutoConfiguration {
     	final RabbitComponentsFactory rabbitComponentsFactory = rabbitComponentsFactory();
 
     	final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(property.getVirtualHost());
-    	CachingConnectionFactory connectionsFactoryBean = rabbitComponentsFactory .createCachingConnectionFactory(property, virtualHost);
+    	CachingConnectionFactory connectionsFactoryBean = rabbitComponentsFactory.createCachingConnectionFactory(property, virtualHost);
 
         Optional.ofNullable(connectionsFactoryBean).ifPresent(connectionFactory -> {
             String connectionFactoryBeanName = RabbitBeanNameResolver.getConnectionFactoryBeanName(virtualHost, property.getHost(), property.getPort());
@@ -268,8 +269,8 @@ public class TunedRabbitAutoConfiguration {
     }
 
     private void autoCreateQueues(TunedRabbitProperties properties, RabbitAdmin rabbitAdmin) {
-        QueueCreator queueCreator = new QueueCreator(properties, rabbitAdmin);
-        queueCreator.create();
+        QueueFactory queueFactory = new QueueFactory(properties, rabbitAdmin);
+        queueFactory.create();
     }
 
     private boolean isTestProfile() {

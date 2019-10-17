@@ -1,10 +1,10 @@
-package com.tradeshift.amqp.autoconfigure;
+package com.tradeshift.amqp.rabbit.components;
 
-import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
 
-public class QueueCreator {
+public class QueueFactory {
 
     private static final String DIRECT = "direct";
     private static final String FANOUT = "fanout";
@@ -13,7 +13,7 @@ public class QueueCreator {
     private TunedRabbitProperties properties;
     private RabbitAdmin rabbitAdmin;
 
-    public QueueCreator(TunedRabbitProperties properties, RabbitAdmin rabbitAdmin) {
+    public QueueFactory(TunedRabbitProperties properties, RabbitAdmin rabbitAdmin) {
         this.properties = properties;
         this.rabbitAdmin = rabbitAdmin;
     }
