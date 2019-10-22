@@ -4,6 +4,7 @@ import com.rabbitmq.client.Channel;
 import com.tradeshift.amqp.annotation.EnableRabbitRetryAndDlqAspect;
 import com.tradeshift.amqp.log.TunedRabbitConstants;
 import com.tradeshift.amqp.rabbit.annotation.TunedRabbitListenerAnnotationBeanPostProcessor;
+import com.tradeshift.amqp.rabbit.components.QueueFactory;
 import com.tradeshift.amqp.rabbit.components.RabbitComponentsFactory;
 import com.tradeshift.amqp.rabbit.handlers.RabbitAdminHandler;
 import com.tradeshift.amqp.rabbit.handlers.RabbitTemplateHandler;
@@ -20,13 +21,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Exchange;
-import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.QueueBuilder;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListenerAnnotationBeanPostProcessor;
 import org.springframework.amqp.rabbit.config.RabbitListenerConfigUtils;
@@ -95,7 +89,7 @@ public class TunedRabbitAutoConfiguration {
             return new TunedRabbitListenerAnnotationBeanPostProcessor();
         }
     }
-    
+
     @Bean
     @ConditionalOnProperty(
             value = "spring.rabbitmq.enable.custom.autoconfiguration",
@@ -223,8 +217,8 @@ public class TunedRabbitAutoConfiguration {
     	final RabbitComponentsFactory rabbitComponentsFactory = rabbitComponentsFactory();
 
     	final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(property.getVirtualHost());
-    	CachingConnectionFactory connectionsFactoryBean = rabbitComponentsFactory .createCachingConnectionFactory(property, virtualHost);
-        
+    	CachingConnectionFactory connectionsFactoryBean = rabbitComponentsFactory.createCachingConnectionFactory(property, virtualHost);
+
         Optional.ofNullable(connectionsFactoryBean).ifPresent(connectionFactory -> {
             String connectionFactoryBeanName = RabbitBeanNameResolver.getConnectionFactoryBeanName(virtualHost, property.getHost(), property.getPort());
             beanFactory.registerSingleton(connectionFactoryBeanName, connectionFactory);
@@ -256,7 +250,7 @@ public class TunedRabbitAutoConfiguration {
             }
         });
     }
-    
+
     /**
      * Apply the auto configuration to create the binding between exchange and queue.
      * It tries to recover the ConnectionFactory and RabbitAdmin from bean factory.
@@ -275,32 +269,8 @@ public class TunedRabbitAutoConfiguration {
     }
 
     private void autoCreateQueues(TunedRabbitProperties properties, RabbitAdmin rabbitAdmin) {
-        log.info("Declaring binding for exchange '{}', queue '{}' and routing key '{}'", properties.getExchange(), properties.getQueue(), properties.getQueueRoutingKey());
-        
-        Exchange exchange = new TopicExchange(properties.getExchange(), true, false);
-
-        if ("direct".equals(properties.getExchangeType())) {
-            exchange = new DirectExchange(properties.getExchange(), true, false);
-        } else if ("fanout".equals(properties.getExchangeType())) {
-            exchange = new FanoutExchange(properties.getExchange(), true, false);
-        }
-
-        final Queue queue = QueueBuilder.durable(properties.getQueue()).build();
-        rabbitAdmin.declareExchange(exchange);
-        rabbitAdmin.declareQueue(queue);
-        rabbitAdmin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(properties.getQueueRoutingKey()).noargs());
-
-        if (properties.isAutoCreateForRetryDlq()) {
-            final Queue dlq = QueueBuilder.durable(properties.getQueueDlq()).build();
-            final Queue retry = QueueBuilder.durable(properties.getQueueRetry())
-                    .withArgument("x-dead-letter-exchange", properties.getExchange())
-                    .withArgument("x-dead-letter-routing-key", properties.getQueueRoutingKey())
-                    .build();
-            rabbitAdmin.declareQueue(dlq);
-            rabbitAdmin.declareQueue(retry);
-            rabbitAdmin.declareBinding(BindingBuilder.bind(retry).to(exchange).with(properties.getQueueRetry()).noargs());
-            rabbitAdmin.declareBinding(BindingBuilder.bind(dlq).to(exchange).with(properties.getQueueDlq()).noargs());
-        }
+        QueueFactory queueFactory = new QueueFactory(properties, rabbitAdmin);
+        queueFactory.create();
     }
 
     private boolean isTestProfile() {
