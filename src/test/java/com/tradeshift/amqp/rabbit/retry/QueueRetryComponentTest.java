@@ -161,7 +161,7 @@ public class QueueRetryComponentTest {
 
     private MessageProperties createMessageProperties(Integer numberOfDeaths) {
         MessageProperties messageProperties = new MessageProperties();
-        HashMap<String, Integer> map = new HashMap();
+        HashMap<String, Integer> map = new HashMap<>();
         IntStream.range(0, numberOfDeaths).forEach(value -> map.put("count", value));
         messageProperties.getHeaders().put("x-death", Collections.singletonList(map));
         return messageProperties;
