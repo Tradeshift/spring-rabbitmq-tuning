@@ -22,7 +22,7 @@ public class SomeListener {
     }
 
     @RabbitListener(containerFactory = "rabbitListenerContainerFactoryDefault", queues = "${spring.rabbitmq.custom.another-event.queue}")
-    @EnableRabbitRetryAndDlq(event = "another-event", exceptions = { IllegalArgumentException.class, RuntimeException.class })
+    @EnableRabbitRetryAndDlq(event = "another-event", retryWhen = { IllegalArgumentException.class, RuntimeException.class })
     public void onMessageAnotherListener(Message message) {
         process(message);
     }

@@ -7,6 +7,18 @@
     <groupId>com.tradeshift</groupId>
     <artifactId>spring-rabbitmq-tuning-example-java-without-autoconfig</artifactId>
     <version>0.1.0-SNAPSHOT</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>6</source>
+                    <target>6</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <packaging>jar</packaging>
 
     <name>Spring RabbitMQ Tuning Example for Java Without Autoconfiguration</name>

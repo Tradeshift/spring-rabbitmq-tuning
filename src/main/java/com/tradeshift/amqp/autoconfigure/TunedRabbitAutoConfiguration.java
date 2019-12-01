@@ -9,6 +9,7 @@ import com.tradeshift.amqp.rabbit.components.RabbitComponentsFactory;
 import com.tradeshift.amqp.rabbit.handlers.RabbitAdminHandler;
 import com.tradeshift.amqp.rabbit.handlers.RabbitTemplateHandler;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
+import com.tradeshift.amqp.rabbit.properties.TunedRabbitPropertiesBindHandlerAdvisor;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitPropertiesMap;
 import com.tradeshift.amqp.rabbit.retry.QueueRetryComponent;
 import com.tradeshift.amqp.resolvers.RabbitBeanNameResolver;
@@ -48,7 +49,7 @@ import org.springframework.context.annotation.Primary;
 @Configuration
 @ConditionalOnClass({RabbitTemplate.class, Channel.class})
 @AutoConfigureBefore(RabbitAutoConfiguration.class)
-@Import({TunedRabbitAutoConfiguration.RabbitPostProcessorConfiguration.class})
+@Import({TunedRabbitAutoConfiguration.RabbitPostProcessorConfiguration.class, TunedRabbitPropertiesBindHandlerAdvisor.class })
 public class TunedRabbitAutoConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(TunedRabbitAutoConfiguration.class);

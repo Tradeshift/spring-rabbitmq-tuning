@@ -27,15 +27,15 @@ ___
 <dependency>
   <groupId>com.tradeshift</groupId>
   <artifactId>spring-rabbitmq-tuning-lib</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'com.tradeshift:spring-rabbitmq-tuning-lib:0.1.0'
+implementation 'com.tradeshift:spring-rabbitmq-tuning-lib:0.1.1'
 ```
 
 # Current Version
-## 0.1.0
+## 0.1.1
