@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  *
  * The <code>discardWhen</code> attribute has higher precedence over <code>exceptions</code> attribute.
  */
-@Target(ElementType.METHOD)
+@Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EnableRabbitRetryAndDlq {
 
