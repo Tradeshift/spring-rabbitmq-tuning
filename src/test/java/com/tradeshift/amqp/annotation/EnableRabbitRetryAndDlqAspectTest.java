@@ -9,6 +9,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -214,6 +218,18 @@ public class EnableRabbitRetryAndDlqAspectTest {
 		verifySentToRetryNeverCalled();
 		verifyIfDlqWasCalled(1);
 	}
+
+	@Test
+	@DirectToDqlWhenNumberFormatExceptionListener
+	public void should_send_dlq_when_only_directToDlqWhen_exceptions_contains_and_no_other_defined_when_it_is_using_a_custom_annotation() throws Throwable {
+		ProceedingJoinPoint joinPoint = mockJointPointWithDeathAndThrowing(
+				"should_send_dlq_when_only_directToDlqWhen_exceptions_contains_and_no_other_defined", 1, NumberFormatException.class);
+
+		aspect.validateMessage(joinPoint);
+
+		verifySentToRetryNeverCalled();
+		verifyIfDlqWasCalled(1);
+	}
 	
 	private void verifySentToRetryNeverCalled() {
 		verify(queueComponent, never()).sendToRetryOrDlq(any(Message.class), any());
@@ -282,5 +298,16 @@ public class EnableRabbitRetryAndDlqAspectTest {
 		queueProperties.setTtlMultiply(1);
 		queueProperties.setMaxRetriesAttempts(3);
 		return queueProperties;
+	}
+
+	
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.METHOD)
+	@EnableRabbitRetryAndDlq(event = "some-event",
+		directToDlqWhen = NumberFormatException.class
+	)
+	public @interface DirectToDqlWhenNumberFormatExceptionListener {
+
 	}
 }
