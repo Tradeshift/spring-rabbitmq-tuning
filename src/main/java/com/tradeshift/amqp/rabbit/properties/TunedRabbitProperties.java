@@ -4,6 +4,9 @@ import java.util.Objects;
 import org.springframework.core.io.Resource;
 
 public class TunedRabbitProperties {
+    private boolean clusterMode = false;
+
+    private String hosts = null;
 
     private String host = "localhost";
 
@@ -259,6 +262,22 @@ public class TunedRabbitProperties {
 
     public void setRabbitTemplateBeanName(final String rabbitTemplateBeanName) {
         this.rabbitTemplateBeanName = rabbitTemplateBeanName;
+    }
+
+    public boolean isClusterMode() {
+        return clusterMode;
+    }
+
+    public void setClusterMode(boolean clusterMode) {
+        this.clusterMode = clusterMode;
+    }
+
+    public String getHosts() {
+        return hosts;
+    }
+
+    public void setHosts(String hosts) {
+        this.hosts = hosts;
     }
 
     public String getHost() {

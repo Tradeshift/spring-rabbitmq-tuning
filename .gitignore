@@ -16,3 +16,10 @@ traces/
 
 release.properties
 pom.xml.releaseBackup
+
+### Eclipse ###
+.classpath
+.project
+.settings/
+
+.vscode/

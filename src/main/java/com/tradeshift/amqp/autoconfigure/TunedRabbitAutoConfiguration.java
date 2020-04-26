@@ -172,7 +172,7 @@ public class TunedRabbitAutoConfiguration {
             ConnectionFactory connectionFactory = createRabbitMQArch(properties);
 
             connectionFactoryHashMap.put(
-                    RabbitBeanNameResolver.getConnectionFactoryBeanName(properties.getVirtualHost(), properties.getHost(), properties.getPort()),
+                    RabbitBeanNameResolver.getConnectionFactoryBeanName(properties),
                     connectionFactory
             );
 
@@ -202,7 +202,7 @@ public class TunedRabbitAutoConfiguration {
     private ConnectionFactory createRabbitMQArch(final TunedRabbitProperties property) {
         final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(property.getVirtualHost());
 
-        if (!portAndHost.contains(property.getPort() + property.getHost())) {
+        if (!portAndHost.contains(getTunedRabbitPropertiesCacheKey(property))) {
             applyAutoConfiguration(property);
         } else if (!virtualHosts.contains(virtualHost)) {
             applyAutoConfiguration(property);
@@ -211,7 +211,7 @@ public class TunedRabbitAutoConfiguration {
         }
 
         return (CachingConnectionFactory) applicationContext.getBean(RabbitBeanNameResolver
-                .getConnectionFactoryBeanName(property.getVirtualHost(), property.getHost(), property.getPort()));
+                .getConnectionFactoryBeanName(property));
     }
 
     private void applyAutoConfiguration(final TunedRabbitProperties property) {
@@ -221,30 +221,31 @@ public class TunedRabbitAutoConfiguration {
     	CachingConnectionFactory connectionsFactoryBean = rabbitComponentsFactory.createCachingConnectionFactory(property, virtualHost);
 
         Optional.ofNullable(connectionsFactoryBean).ifPresent(connectionFactory -> {
-            String connectionFactoryBeanName = RabbitBeanNameResolver.getConnectionFactoryBeanName(virtualHost, property.getHost(), property.getPort());
+            String connectionFactoryBeanName = RabbitBeanNameResolver.getConnectionFactoryBeanName(virtualHost, property);
             beanFactory.registerSingleton(connectionFactoryBeanName, connectionFactory);
             log.info("ConnectionFactory Bean with name {} was created for the event {} and virtual host {}",
                     connectionFactoryBeanName, property.getEventName(), virtualHost);
 
-            String listenerContainerFactoryBeanName = RabbitBeanNameResolver.getSimpleRabbitListenerContainerFactoryBean(virtualHost, property.getHost(), property.getPort());
+            String listenerContainerFactoryBeanName = RabbitBeanNameResolver.getSimpleRabbitListenerContainerFactoryBean(virtualHost, property);
             SimpleRabbitListenerContainerFactory simpleRabbitListenerContainerFactoryBeanDef = rabbitComponentsFactory.createSimpleRabbitListenerContainerFactoryBean(property, connectionFactory);
             beanFactory.registerSingleton(listenerContainerFactoryBeanName, simpleRabbitListenerContainerFactoryBeanDef);
             log.info("SimpleRabbitListenerContainerFactory Bean with name {} was created for the event {} and virtual host {}",
                     listenerContainerFactoryBeanName, property.getEventName(), virtualHost);
 
             RabbitAdmin beanDefinitionRabbitAdmin = rabbitComponentsFactory.createRabbitAdminBean(connectionFactory);
-            String rabbitAdminBeanName = RabbitBeanNameResolver.getRabbitAdminBeanName(virtualHost, property.getHost(), property.getPort());
+            String rabbitAdminBeanName = RabbitBeanNameResolver.getRabbitAdminBeanName(virtualHost, property);
             beanFactory.registerSingleton(rabbitAdminBeanName, beanDefinitionRabbitAdmin);
             log.info("RabbitAdmin Bean with name {} was created for the event {} and virtual host {}",
                     rabbitAdminBeanName, property.getEventName(), virtualHost);
 
             RabbitTemplate beanDefinitionRabbitTemplate = rabbitComponentsFactory.createRabbitTemplateBean(connectionFactory, property);
-            String rabbitTemplateBeanName = RabbitBeanNameResolver.getRabbitTemplateBeanName(virtualHost, property.getHost(), property.getPort());
+            String rabbitTemplateBeanName = RabbitBeanNameResolver.getRabbitTemplateBeanName(virtualHost, property);
             beanFactory.registerSingleton(rabbitTemplateBeanName, beanDefinitionRabbitTemplate);
             log.info("RabbitTemplate Bean with name {} was created for the event {} and virtual host {}",
                     rabbitTemplateBeanName, property.getEventName(), virtualHost);
+
             virtualHosts.add(virtualHost);
-            portAndHost.add(property.getPort() + property.getHost());
+            portAndHost.add(getTunedRabbitPropertiesCacheKey(property));
 
             if (property.isAutoCreate() || (property.isAutoCreateOnlyForTest() && isTestProfile())) {
                 autoCreateQueues(property, beanDefinitionRabbitAdmin);
@@ -259,7 +260,7 @@ public class TunedRabbitAutoConfiguration {
     private void applyAutoConfigurationOnlyForBinding(final TunedRabbitProperties properties) {
     	final String virtualHost = RabbitBeanNameResolver.treatVirtualHostName(properties.getVirtualHost());
 
-    	String rabbitAdminBeanName = RabbitBeanNameResolver.getRabbitAdminBeanName(virtualHost, properties.getHost(), properties.getPort());
+    	String rabbitAdminBeanName = RabbitBeanNameResolver.getRabbitAdminBeanName(virtualHost, properties);
     	log.info("Getting RabbitAdmin Bean with name {} for the event {} and virtual host {}",
                 rabbitAdminBeanName, properties.getEventName(), virtualHost);
     	RabbitAdmin rabbitAdmin = beanFactory.getBean(rabbitAdminBeanName, RabbitAdmin.class);
@@ -272,6 +273,14 @@ public class TunedRabbitAutoConfiguration {
     private void autoCreateQueues(TunedRabbitProperties properties, RabbitAdmin rabbitAdmin) {
         QueueFactory queueFactory = new QueueFactory(properties, rabbitAdmin);
         queueFactory.create();
+    }
+
+    private String getTunedRabbitPropertiesCacheKey(TunedRabbitProperties properties) {
+        if (properties.isClusterMode()) {
+            // TODO: maybe improve so that the order of each host:port in the list doesn't generate different key
+            return properties.getHosts();
+        }
+        return properties.getPort() + properties.getHost();
     }
 
     private boolean isTestProfile() {
