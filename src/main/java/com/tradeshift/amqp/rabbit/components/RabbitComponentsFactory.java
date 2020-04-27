@@ -60,6 +60,7 @@ public class RabbitComponentsFactory {
 						property.getTlsKeystorePassword().toCharArray()));
 			}
 
+			factory.setRequestedHeartbeat(10);
 			factory.setHost(property.getHost());
 			factory.setPort(property.getPort());
 			factory.setAutomaticRecoveryEnabled(property.isAutomaticRecovery());
