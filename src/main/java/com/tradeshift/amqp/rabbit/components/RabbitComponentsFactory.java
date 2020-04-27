@@ -21,6 +21,7 @@ import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
 import com.tradeshift.amqp.ssl.TLSContextUtil;
 
 public class RabbitComponentsFactory {
+
 	private static final Logger log = LoggerFactory.getLogger(RabbitComponentsFactory.class);
 
 
@@ -60,7 +61,7 @@ public class RabbitComponentsFactory {
 						property.getTlsKeystorePassword().toCharArray()));
 			}
 
-			factory.setRequestedHeartbeat(10);
+			factory.setRequestedHeartbeat(property.getHeartbeat());
 			factory.setHost(property.getHost());
 			factory.setPort(property.getPort());
 			factory.setAutomaticRecoveryEnabled(property.isAutomaticRecovery());

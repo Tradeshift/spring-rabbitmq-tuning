@@ -65,6 +65,8 @@ public class TunedRabbitProperties {
 
     private boolean enableLogs = true;
 
+    private int heartbeat = 10;
+
     public TunedRabbitProperties() {
         // Do nothing because this is a empty constructor
     }
@@ -311,5 +313,13 @@ public class TunedRabbitProperties {
 
     public void setEnableLogs(boolean enableLogs) {
         this.enableLogs = enableLogs;
+    }
+
+    public int getHeartbeat() {
+        return heartbeat;
+    }
+
+    public void setHeartbeat(int heartbeat) {
+        this.heartbeat = heartbeat;
     }
 }
