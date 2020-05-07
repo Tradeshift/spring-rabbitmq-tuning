@@ -2,6 +2,10 @@ package com.tradeshift.amqp.autoconfigure;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.lang.reflect.Field;
@@ -11,6 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -482,6 +487,52 @@ public class TunedRabbitAutoConfigurationTest {
         assertEquals("localhost", connectionFactoryForDefaultVH.getHost());
         assertEquals(5672, connectionFactoryForDefaultVH.getPort());
         assertEquals("guest", connectionFactoryForDefaultVH.getUsername());
+
+        assertEquals(1, context.getBeansOfType(CachingConnectionFactory.class).size());
+        assertEquals(1, context.getBeansOfType(RabbitTemplate.class).size());
+        assertEquals(1, context.getBeansOfType(RabbitAdmin.class).size());
+        assertEquals(1, context.getBeansOfType(SimpleRabbitListenerContainerFactory.class).size());
+    }
+
+    @Test
+    public void should_create_create_connectionFactory_without_host_and_port_when_cluster_mode() {
+
+        TunedRabbitPropertiesMap rabbitCustomPropertiesMap = new TunedRabbitPropertiesMap();
+        TunedRabbitProperties queueProperties = createQueueProperties(true);
+        queueProperties.setClusterMode(true);
+        queueProperties.setHosts("127.0.0.1:5672,127.0.0.1:6672");
+        // set this to assert that wasn't used
+        queueProperties.setHost("tradeshift");
+        queueProperties.setPort(6672);
+        // spying to assert that, when in cluster mode, the get hosts is called
+        TunedRabbitProperties spyQueueProperties = spy(queueProperties);
+        rabbitCustomPropertiesMap.put("some-event", spyQueueProperties);
+
+        tradeshiftRabbitAutoConfiguration.routingConnectionFactory(rabbitCustomPropertiesMap);
+        
+        // verify if it was called at least once for each component:
+        // connection factory, rabbit template, rabbit admin and listener container
+        verify(spyQueueProperties, atLeast(4)).isClusterMode();
+        verify(spyQueueProperties, atLeast(4)).getHosts();
+        verify(spyQueueProperties, never()).getHost();
+        verify(spyQueueProperties, never()).getPort();
+
+        CachingConnectionFactory connectionFactory = (CachingConnectionFactory) context.getBean(RabbitBeanNameResolver.getConnectionFactoryBeanNameForDefaultVirtualHost(queueProperties));
+        RabbitTemplate rabbitTemplate = (RabbitTemplate) context.getBean(RabbitBeanNameResolver.getRabbitTemplateBeanNameForDefaultVirtualHost(queueProperties));
+        RabbitAdmin rabbitAdmin = (RabbitAdmin) context.getBean(RabbitBeanNameResolver.getRabbitAdminBeanNameForDefaultVirtualHost(queueProperties));
+        SimpleRabbitListenerContainerFactory simpleRabbitListenerContainerFactory =
+                (SimpleRabbitListenerContainerFactory) context.getBean(RabbitBeanNameResolver.getSimpleRabbitListenerContainerFactoryBeanForDefaultVirtualHost(queueProperties));
+
+        assertNotNull(connectionFactory);
+        assertNotNull(rabbitTemplate);
+        assertNotNull(rabbitAdmin);
+        assertNotNull(simpleRabbitListenerContainerFactory);
+
+        // default values from Spring
+        assertEquals("localhost", connectionFactory.getHost());
+        assertEquals(5672, connectionFactory.getPort());
+        assertEquals("/", connectionFactory.getVirtualHost());
+        assertEquals("guest", connectionFactory.getUsername());
 
         assertEquals(1, context.getBeansOfType(CachingConnectionFactory.class).size());
         assertEquals(1, context.getBeansOfType(RabbitTemplate.class).size());
