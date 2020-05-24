@@ -64,6 +64,8 @@ public class RabbitComponentsFactory {
 
 			if (property.isClusterMode()) {
 				log.info("Event {} configured with cluster mode on", property.getEventName());
+				factory.setHost(null);
+				factory.setPort(0);
 				CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory(factory);
 				cachingConnectionFactory.setAddresses(property.getHosts());
 				return cachingConnectionFactory;

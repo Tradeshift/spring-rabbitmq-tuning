@@ -1,7 +1,9 @@
 package com.tradeshift.amqp.autoconfigure;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -9,14 +11,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.stream.Stream;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.connection.AbstractConnectionFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -29,6 +34,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.rabbitmq.client.Address;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitPropertiesMap;
 import com.tradeshift.amqp.resolvers.RabbitBeanNameResolver;
@@ -495,7 +501,7 @@ public class TunedRabbitAutoConfigurationTest {
     }
 
     @Test
-    public void should_create_create_connectionFactory_without_host_and_port_when_cluster_mode() {
+    public void should_create_create_connectionFactory_without_host_and_port_when_cluster_mode() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 
         TunedRabbitPropertiesMap rabbitCustomPropertiesMap = new TunedRabbitPropertiesMap();
         TunedRabbitProperties queueProperties = createQueueProperties(true);
@@ -529,10 +535,19 @@ public class TunedRabbitAutoConfigurationTest {
         assertNotNull(simpleRabbitListenerContainerFactory);
 
         // default values from Spring
-        assertEquals("localhost", connectionFactory.getHost());
-        assertEquals(5672, connectionFactory.getPort());
+        assertEquals(null, connectionFactory.getHost());
+        assertEquals(0, connectionFactory.getPort());
         assertEquals("/", connectionFactory.getVirtualHost());
         assertEquals("guest", connectionFactory.getUsername());
+        
+        // assure that have hosts
+        Field addressesField = AbstractConnectionFactory.class.getDeclaredField("addresses");
+        addressesField.setAccessible(true);
+        Address[] addresses = (Address[]) addressesField.get(connectionFactory);
+        List<String> hosts = Stream.of(addresses)
+                .map(a -> String.format("%s:%d", a.getHost(), a.getPort()))
+                .collect(toList());
+        assertThat(hosts, Matchers.containsInAnyOrder("127.0.0.1:5672", "127.0.0.1:6672"));
 
         assertEquals(1, context.getBeansOfType(CachingConnectionFactory.class).size());
         assertEquals(1, context.getBeansOfType(RabbitTemplate.class).size());
