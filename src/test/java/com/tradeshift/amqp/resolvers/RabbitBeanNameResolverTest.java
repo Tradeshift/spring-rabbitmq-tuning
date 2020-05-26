@@ -4,53 +4,136 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
+
 public class RabbitBeanNameResolverTest {
 
-    @Test
-    public void should_return_the_correct_name_for_connection_factory() {
-        assertEquals("connectionFactoryTradeshiftLocalhost5672",
-                RabbitBeanNameResolver.getConnectionFactoryBeanName("tradeshift", "localhost", 5672));
-    }
+	@Test
+	public void should_return_the_correct_name_for_default_connection_factory_from_properties() {
+		assertEquals("connectionFactoryDefaultLocalhost5672", RabbitBeanNameResolver
+				.getConnectionFactoryBeanName(createQueueProperties("localhost", 5672, null)));
+	}
 
-    @Test
-    public void should_return_the_correct_name_for_rabbit_admin() {
-        assertEquals("rabbitAdminTradeshiftLocalhost5672",
-                RabbitBeanNameResolver.getRabbitAdminBeanName("tradeshift", "localhost", 5672));
-    }
+	@Test
+	public void should_return_the_correct_name_for_connection_factory_from_properties() {
+		assertEquals("connectionFactoryTradeshiftLocalhost5672", RabbitBeanNameResolver
+				.getConnectionFactoryBeanName(createQueueProperties("localhost", 5672, "tradeshift")));
+	}
 
-    @Test
-    public void should_return_the_correct_name_for_rabbit_template() {
-        assertEquals("rabbitTemplateTradeshiftLocalhost5672",
-                RabbitBeanNameResolver.getRabbitTemplateBeanName("tradeshift", "localhost", 5672));
-    }
+	@Test
+	public void should_return_the_correct_name_for_default_connection_factory_from_properties_with_cluster_mode() {
+		assertEquals("connectionFactoryDefaultLocalhost5672localhost6672", RabbitBeanNameResolver
+				.getConnectionFactoryBeanName(createQueuePropertiesInClusterMode("localhost:5672,localhost:6672", null)));
+	}
 
-    @Test
-    public void should_return_the_correct_name_for_listener_container_factory() {
-        assertEquals("containerFactoryTradeshiftLocalhost5672",
-                RabbitBeanNameResolver.getSimpleRabbitListenerContainerFactoryBean("tradeshift", "localhost", 5672));
-    }
+	@Test
+	public void should_return_the_correct_name_for_connection_factory_from_properties_with_cluster_mode() {
+		assertEquals("connectionFactoryTradeshiftLocalhost5672localhost6672", RabbitBeanNameResolver
+				.getConnectionFactoryBeanName(createQueuePropertiesInClusterMode("localhost:5672,localhost:6672", "tradeshift")));
+	}
 
-    @Test
-    public void should_return_the_correct_name_for_default_connection_factory() {
-        assertEquals("connectionFactoryDefaultLocalhost5671",
-                RabbitBeanNameResolver.getConnectionFactoryBeanNameForDefaultVirtualHost("localhost", 5671));
-    }
+	@Test
+	public void should_return_the_correct_name_for_default_rabbit_admin_from_properties() {
+		assertEquals("rabbitAdminDefaultLocalhost5672", RabbitBeanNameResolver
+				.getRabbitAdminBeanName(createQueueProperties("localhost", 5672, null)));
+	}
 
-    @Test
-    public void should_return_the_correct_name_for_default_rabbit_admin() {
-        assertEquals("rabbitAdminDefaultLocalhost5671",
-                RabbitBeanNameResolver.getRabbitAdminBeanNameForDefaultVirtualHost("localhost", 5671));
-    }
+	@Test
+	public void should_return_the_correct_name_for_rabbit_admin_from_properties() {
+		assertEquals("rabbitAdminTradeshiftLocalhost5672", RabbitBeanNameResolver
+				.getRabbitAdminBeanName(createQueueProperties("localhost", 5672, "tradeshift")));
+	}
 
-    @Test
-    public void should_return_the_correct_name_for_default_rabbit_template() {
-        assertEquals("rabbitTemplateDefaultLocalhost5671",
-                RabbitBeanNameResolver.getRabbitTemplateBeanNameForDefaultVirtualHost("localhost", 5671));
-    }
+	@Test
+	public void should_return_the_correct_name_for_default_rabbit_admin_from_properties_with_cluster_mode() {
+		assertEquals("rabbitAdminDefaultLocalhost5672localhost6672", RabbitBeanNameResolver
+				.getRabbitAdminBeanName(createQueuePropertiesInClusterMode("localhost:5672,localhost:6672", null)));
+	}
 
-    @Test
-    public void should_return_the_correct_name_for_default_listener_container_factory() {
-        assertEquals("containerFactoryDefaultLocalhost5671",
-                RabbitBeanNameResolver.getSimpleRabbitListenerContainerFactoryBeanForDefaultVirtualHost("localhost", 5671));
-    }
+	@Test
+	public void should_return_the_correct_name_for_rabbit_admin_from_properties_with_cluster_mode() {
+		assertEquals("rabbitAdminTradeshiftLocalhost5672localhost6672", RabbitBeanNameResolver
+				.getRabbitAdminBeanName(createQueuePropertiesInClusterMode("localhost:5672,localhost:6672", "tradeshift")));
+	}
+
+	@Test
+	public void should_return_the_correct_name_for_default_rabbit_template_from_properties() {
+		assertEquals("rabbitTemplateDefaultLocalhost5672", RabbitBeanNameResolver
+				.getRabbitTemplateBeanName(createQueueProperties("localhost", 5672, null)));
+	}
+
+	@Test
+	public void should_return_the_correct_name_for_rabbit_template_from_properties() {
+		assertEquals("rabbitTemplateTradeshiftLocalhost5672", RabbitBeanNameResolver
+				.getRabbitTemplateBeanName(createQueueProperties("localhost", 5672, "tradeshift")));
+	}
+
+	@Test
+	public void should_return_the_correct_name_for_default_rabbit_template_from_properties_with_cluster_mode() {
+		assertEquals("rabbitTemplateDefaultLocalhost5672localhost6672", RabbitBeanNameResolver
+				.getRabbitTemplateBeanName(createQueuePropertiesInClusterMode("localhost:5672,localhost:6672", null)));
+	}
+
+	@Test
+	public void should_return_the_correct_name_for_rabbit_template_from_properties_with_cluster_mode() {
+		assertEquals("rabbitTemplateTradeshiftLocalhost5672localhost6672", RabbitBeanNameResolver
+				.getRabbitTemplateBeanName(createQueuePropertiesInClusterMode("localhost:5672,localhost:6672", "tradeshift")));
+	}
+
+	@Test
+	public void should_return_the_correct_name_for_default_listener_container_factory_from_properties() {
+		assertEquals("containerFactoryDefaultLocalhost5672", RabbitBeanNameResolver
+				.getSimpleRabbitListenerContainerFactoryBean(createQueueProperties("localhost", 5672, null)));
+	}
+
+	@Test
+	public void should_return_the_correct_name_for_listener_container_factory_from_properties() {
+		assertEquals("containerFactoryTradeshiftLocalhost5672", RabbitBeanNameResolver
+				.getSimpleRabbitListenerContainerFactoryBean(createQueueProperties("localhost", 5672, "tradeshift")));
+	}
+
+	@Test
+	public void should_return_the_correct_name_for_default_container_factory_from_properties_with_cluster_mode() {
+		assertEquals("containerFactoryDefaultLocalhost5672localhost6672", RabbitBeanNameResolver
+				.getSimpleRabbitListenerContainerFactoryBean(createQueuePropertiesInClusterMode("localhost:5672,localhost:6672", null)));
+	}
+
+	@Test
+	public void should_return_the_correct_name_for_container_factory_from_properties_with_cluster_mode() {
+		assertEquals("containerFactoryTradeshiftLocalhost5672localhost6672", RabbitBeanNameResolver
+				.getSimpleRabbitListenerContainerFactoryBean(createQueuePropertiesInClusterMode("localhost:5672,localhost:6672", "tradeshift")));
+	}
+
+
+	private TunedRabbitProperties createQueueProperties(String host, int port, String virtualHost) {
+		return createQueueProperties(host, port, null, virtualHost);
+	}
+
+
+	private TunedRabbitProperties createQueuePropertiesInClusterMode(String hosts, String virtualHost) {
+		return createQueueProperties(null, 0, hosts, virtualHost);
+	}
+
+	private TunedRabbitProperties createQueueProperties(String host, int port, String hosts, String virtualHost) {
+		TunedRabbitProperties queueProperties = new TunedRabbitProperties();
+		if (hosts != null && !hosts.isEmpty()) {
+			queueProperties.setClusterMode(true);
+			queueProperties.setHosts(hosts);
+		}
+		queueProperties.setHost(host);
+		queueProperties.setPort(port);
+		queueProperties.setVirtualHost(virtualHost);
+		queueProperties.setQueue("some-queue");
+		queueProperties.setExchange("some-exchange");
+		queueProperties.setExchangeType("topic");
+		queueProperties.setMaxRetriesAttempts(5);
+		queueProperties.setQueueRoutingKey("routing.key.test");
+		queueProperties.setTtlRetryMessage(3000);
+		queueProperties.setPrimary(true);
+		queueProperties.setUsername("guest");
+		queueProperties.setPassword("guest");
+		queueProperties.setDefaultRetryDlq(true);
+		queueProperties.setSslConnection(false);
+		return queueProperties;
+	}
 }

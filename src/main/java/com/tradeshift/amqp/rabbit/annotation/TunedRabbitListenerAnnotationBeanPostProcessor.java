@@ -30,7 +30,7 @@ public class TunedRabbitListenerAnnotationBeanPostProcessor
         TunedRabbitProperties tunedRabbitProperties = tunedRabbitPropertiesMap.get(rabbitListener.containerFactory());
 
         TunedRabbitListener tunedRabbitListener = new TunedRabbitListener(rabbitListener);
-        tunedRabbitListener.setContainerFactory(RabbitBeanNameResolver.getSimpleRabbitListenerContainerFactoryBean(tunedRabbitProperties.getVirtualHost(), tunedRabbitProperties.getHost(), tunedRabbitProperties.getPort()));
+        tunedRabbitListener.setContainerFactory(RabbitBeanNameResolver.getSimpleRabbitListenerContainerFactoryBean(tunedRabbitProperties));
         super.processAmqpListener(tunedRabbitListener, method, bean, beanName);
         enhanceBeansWithReferenceToRabbitAdmin(tunedRabbitProperties);
     }

@@ -59,11 +59,20 @@ public class RabbitComponentsFactory {
 				factory.useSslProtocol(TLSContextUtil.tls12ContextFromPKCS12(property.getTlsKeystoreLocation().getInputStream(),
 						property.getTlsKeystorePassword().toCharArray()));
 			}
+			factory.setAutomaticRecoveryEnabled(property.isAutomaticRecovery());
+			Optional.ofNullable(property.getVirtualHost()).ifPresent(factory::setVirtualHost);
+
+			if (property.isClusterMode()) {
+				log.info("Event {} configured with cluster mode on", property.getEventName());
+				factory.setHost(null);
+				factory.setPort(0);
+				CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory(factory);
+				cachingConnectionFactory.setAddresses(property.getHosts());
+				return cachingConnectionFactory;
+			}
 
 			factory.setHost(property.getHost());
 			factory.setPort(property.getPort());
-			factory.setAutomaticRecoveryEnabled(property.isAutomaticRecovery());
-			Optional.ofNullable(property.getVirtualHost()).ifPresent(factory::setVirtualHost);
 
 			return new CachingConnectionFactory(factory);
 		} catch (Exception e) {

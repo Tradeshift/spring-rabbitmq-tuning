@@ -15,22 +15,18 @@ public class RabbitBeanNameResolver {
     // -------------------------------------- ConnectionFactory --------------------------------------
 
     public static String getConnectionFactoryBeanNameForDefaultVirtualHost(TunedRabbitProperties customRabbitProperties) {
-        return getConnectionFactoryBeanName(null, customRabbitProperties.getHost(), customRabbitProperties.getPort());
-    }
-
-    public static String getConnectionFactoryBeanNameForDefaultVirtualHost(String host, int port) {
-        return getConnectionFactoryBeanName(null, host, port);
+        return getConnectionFactoryBeanName(null, getHostAndPortKey(customRabbitProperties));
     }
 
     public static String getConnectionFactoryBeanName(TunedRabbitProperties customRabbitProperties) {
-        return getConnectionFactoryBeanName(customRabbitProperties.getVirtualHost(), customRabbitProperties.getHost() + customRabbitProperties.getPort());
+        return getConnectionFactoryBeanName(customRabbitProperties.getVirtualHost(), getHostAndPortKey(customRabbitProperties));
     }
 
-    public static String getConnectionFactoryBeanName(String virtualHost, String host, int port) {
-        return getConnectionFactoryBeanName(virtualHost, host + port);
+    public static String getConnectionFactoryBeanName(String virtualHost, TunedRabbitProperties customRabbitProperties) {
+        return getConnectionFactoryBeanName(virtualHost, getHostAndPortKey(customRabbitProperties));
     }
 
-    public static String getConnectionFactoryBeanName(String virtualHost, String hostAndPort) {
+    private static String getConnectionFactoryBeanName(String virtualHost, String hostAndPort) {
         return getConnectionFactoryBeanName(treatVirtualHostName(virtualHost) + "_" + hostAndPort);
     }
 
@@ -41,22 +37,18 @@ public class RabbitBeanNameResolver {
     // -------------------------------------- RabbitTemplate --------------------------------------
 
     public static String getRabbitTemplateBeanNameForDefaultVirtualHost(TunedRabbitProperties customRabbitProperties) {
-        return getRabbitTemplateBeanName(null, customRabbitProperties.getHost(), customRabbitProperties.getPort());
-    }
-
-    public static String getRabbitTemplateBeanNameForDefaultVirtualHost(String host, int port) {
-        return getRabbitTemplateBeanName(null, host, port);
+        return getRabbitTemplateBeanName(null, getHostAndPortKey(customRabbitProperties));
     }
 
     public static String getRabbitTemplateBeanName(TunedRabbitProperties customRabbitProperties) {
-        return getRabbitTemplateBeanName(customRabbitProperties.getVirtualHost(), customRabbitProperties.getHost() + customRabbitProperties.getPort());
+        return getRabbitTemplateBeanName(customRabbitProperties.getVirtualHost(), getHostAndPortKey(customRabbitProperties));
     }
 
-    public static String getRabbitTemplateBeanName(String virtualHost, String host, int port) {
-        return getRabbitTemplateBeanName(virtualHost, host + port);
+    public static String getRabbitTemplateBeanName(String virtualHost, TunedRabbitProperties customRabbitProperties) {
+        return getRabbitTemplateBeanName(virtualHost, getHostAndPortKey(customRabbitProperties));
     }
 
-    public static String getRabbitTemplateBeanName(String virtualHost, String hostAndPort) {
+    private static String getRabbitTemplateBeanName(String virtualHost, String hostAndPort) {
         return getRabbitTemplateBeanName(treatVirtualHostName(virtualHost) + "_" + hostAndPort);
     }
 
@@ -67,22 +59,18 @@ public class RabbitBeanNameResolver {
     // -------------------------------------- RabbitAdmin --------------------------------------
 
     public static String getRabbitAdminBeanNameForDefaultVirtualHost(TunedRabbitProperties customRabbitProperties) {
-        return getRabbitAdminBeanName(null, customRabbitProperties.getHost(), customRabbitProperties.getPort());
-    }
-
-    public static String getRabbitAdminBeanNameForDefaultVirtualHost(String host, int port) {
-        return getRabbitAdminBeanName(null, host, port);
+        return getRabbitAdminBeanName(null, getHostAndPortKey(customRabbitProperties));
     }
 
     public static String getRabbitAdminBeanName(TunedRabbitProperties customRabbitProperties) {
-        return getRabbitAdminBeanName(customRabbitProperties.getVirtualHost(), customRabbitProperties.getHost() + customRabbitProperties.getPort());
+        return getRabbitAdminBeanName(customRabbitProperties.getVirtualHost(), getHostAndPortKey(customRabbitProperties));
     }
 
-    public static String getRabbitAdminBeanName(String virtualHost, String host, int port) {
-        return getRabbitAdminBeanName(virtualHost, host + port);
+    public static String getRabbitAdminBeanName(String virtualHost, TunedRabbitProperties customRabbitProperties) {
+        return getRabbitAdminBeanName(virtualHost, getHostAndPortKey(customRabbitProperties));
     }
 
-    public static String getRabbitAdminBeanName(String virtualHost, String hostAndPort) {
+    private static String getRabbitAdminBeanName(String virtualHost, String hostAndPort) {
         return getRabbitAdminBeanName(treatVirtualHostName(virtualHost) + "_" + hostAndPort, true);
     }
 
@@ -97,19 +85,15 @@ public class RabbitBeanNameResolver {
     // -------------------------------------- SimpleRabbitListenerContainerFactory --------------------------------------
 
     public static String getSimpleRabbitListenerContainerFactoryBeanForDefaultVirtualHost(TunedRabbitProperties customRabbitProperties) {
-        return getSimpleRabbitListenerContainerFactoryBean(null, customRabbitProperties.getHost(), customRabbitProperties.getPort());
-    }
-
-    public static String getSimpleRabbitListenerContainerFactoryBeanForDefaultVirtualHost(String host, int port) {
-        return getSimpleRabbitListenerContainerFactoryBean(null, host, port);
+        return getSimpleRabbitListenerContainerFactoryBean(null, getHostAndPortKey(customRabbitProperties));
     }
 
     public static String getSimpleRabbitListenerContainerFactoryBean(TunedRabbitProperties customRabbitProperties) {
-        return getSimpleRabbitListenerContainerFactoryBean(customRabbitProperties.getVirtualHost(), customRabbitProperties.getHost() + customRabbitProperties.getPort());
+        return getSimpleRabbitListenerContainerFactoryBean(customRabbitProperties.getVirtualHost(), getHostAndPortKey(customRabbitProperties));
     }
 
-    public static String getSimpleRabbitListenerContainerFactoryBean(String virtualHost, String host, int port) {
-        return getSimpleRabbitListenerContainerFactoryBean(virtualHost, host + port);
+    public static String getSimpleRabbitListenerContainerFactoryBean(String virtualHost, TunedRabbitProperties customRabbitProperties) {
+        return getSimpleRabbitListenerContainerFactoryBean(virtualHost, getHostAndPortKey(customRabbitProperties));
     }
 
     protected static String getSimpleRabbitListenerContainerFactoryBean(String virtualHost, String hostAndPort) {
@@ -124,6 +108,14 @@ public class RabbitBeanNameResolver {
 
     public static String treatVirtualHostName(String virtualHost) {
         return Optional.ofNullable(virtualHost).orElse("Default");
+    }
+
+    private static String getHostAndPortKey(TunedRabbitProperties properties) {
+        if (properties.isClusterMode()) {
+            // TODO: improve so that the order of each host:port in the list doesn't generate different key
+            return properties.getHosts().replaceAll("[:,]", "");
+        }
+        return properties.getHost() + properties.getPort();
     }
 
     protected static String convertSnakeCaseToCamelCase(final String text) {

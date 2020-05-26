@@ -1,17 +1,27 @@
 package com.tradeshift.amqp.autoconfigure;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.stream.Stream;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.connection.AbstractConnectionFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -24,6 +34,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.rabbitmq.client.Address;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitProperties;
 import com.tradeshift.amqp.rabbit.properties.TunedRabbitPropertiesMap;
 import com.tradeshift.amqp.resolvers.RabbitBeanNameResolver;
@@ -482,6 +493,61 @@ public class TunedRabbitAutoConfigurationTest {
         assertEquals("localhost", connectionFactoryForDefaultVH.getHost());
         assertEquals(5672, connectionFactoryForDefaultVH.getPort());
         assertEquals("guest", connectionFactoryForDefaultVH.getUsername());
+
+        assertEquals(1, context.getBeansOfType(CachingConnectionFactory.class).size());
+        assertEquals(1, context.getBeansOfType(RabbitTemplate.class).size());
+        assertEquals(1, context.getBeansOfType(RabbitAdmin.class).size());
+        assertEquals(1, context.getBeansOfType(SimpleRabbitListenerContainerFactory.class).size());
+    }
+
+    @Test
+    public void should_create_create_connectionFactory_without_host_and_port_when_cluster_mode() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+
+        TunedRabbitPropertiesMap rabbitCustomPropertiesMap = new TunedRabbitPropertiesMap();
+        TunedRabbitProperties queueProperties = createQueueProperties(true);
+        queueProperties.setClusterMode(true);
+        queueProperties.setHosts("127.0.0.1:5672,127.0.0.1:6672");
+        // set this to assert that wasn't used
+        queueProperties.setHost("tradeshift");
+        queueProperties.setPort(6672);
+        // spying to assert that, when in cluster mode, the get hosts is called
+        TunedRabbitProperties spyQueueProperties = spy(queueProperties);
+        rabbitCustomPropertiesMap.put("some-event", spyQueueProperties);
+
+        tradeshiftRabbitAutoConfiguration.routingConnectionFactory(rabbitCustomPropertiesMap);
+        
+        // verify if it was called at least once for each component:
+        // connection factory, rabbit template, rabbit admin and listener container
+        verify(spyQueueProperties, atLeast(4)).isClusterMode();
+        verify(spyQueueProperties, atLeast(4)).getHosts();
+        verify(spyQueueProperties, never()).getHost();
+        verify(spyQueueProperties, never()).getPort();
+
+        CachingConnectionFactory connectionFactory = (CachingConnectionFactory) context.getBean(RabbitBeanNameResolver.getConnectionFactoryBeanNameForDefaultVirtualHost(queueProperties));
+        RabbitTemplate rabbitTemplate = (RabbitTemplate) context.getBean(RabbitBeanNameResolver.getRabbitTemplateBeanNameForDefaultVirtualHost(queueProperties));
+        RabbitAdmin rabbitAdmin = (RabbitAdmin) context.getBean(RabbitBeanNameResolver.getRabbitAdminBeanNameForDefaultVirtualHost(queueProperties));
+        SimpleRabbitListenerContainerFactory simpleRabbitListenerContainerFactory =
+                (SimpleRabbitListenerContainerFactory) context.getBean(RabbitBeanNameResolver.getSimpleRabbitListenerContainerFactoryBeanForDefaultVirtualHost(queueProperties));
+
+        assertNotNull(connectionFactory);
+        assertNotNull(rabbitTemplate);
+        assertNotNull(rabbitAdmin);
+        assertNotNull(simpleRabbitListenerContainerFactory);
+
+        // default values from Spring
+        assertEquals(null, connectionFactory.getHost());
+        assertEquals(0, connectionFactory.getPort());
+        assertEquals("/", connectionFactory.getVirtualHost());
+        assertEquals("guest", connectionFactory.getUsername());
+        
+        // assure that have hosts
+        Field addressesField = AbstractConnectionFactory.class.getDeclaredField("addresses");
+        addressesField.setAccessible(true);
+        Address[] addresses = (Address[]) addressesField.get(connectionFactory);
+        List<String> hosts = Stream.of(addresses)
+                .map(a -> String.format("%s:%d", a.getHost(), a.getPort()))
+                .collect(toList());
+        assertThat(hosts, Matchers.containsInAnyOrder("127.0.0.1:5672", "127.0.0.1:6672"));
 
         assertEquals(1, context.getBeansOfType(CachingConnectionFactory.class).size());
         assertEquals(1, context.getBeansOfType(RabbitTemplate.class).size());
