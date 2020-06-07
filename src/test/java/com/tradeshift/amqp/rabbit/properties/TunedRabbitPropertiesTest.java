@@ -66,6 +66,22 @@ public class TunedRabbitPropertiesTest {
         assertTrue(queueProperties.isEnableLogs());
     }
 
+    @Test
+    public void should_return_heartbeat_default() {
+        String queueName = "queue.test.default";
+        TunedRabbitProperties queueProperties = createQueueProperties(queueName, true, false);
+        assertEquals(10, queueProperties.getHeartbeat());
+    }
+
+    @Test
+    public void should_include_heartbeat_default() {
+        String queueName = "queue.test.default";
+        int heartBeat = 60;
+        TunedRabbitProperties queueProperties = createQueueProperties(queueName, true, false);
+        queueProperties.setHeartbeat(heartBeat);
+        assertEquals(60, queueProperties.getHeartbeat());
+    }
+
     private TunedRabbitProperties createQueueProperties(String queue, boolean defaultRetryDlq, boolean enableSnakeCaseForQueuesAndExchangeNames) {
         return createQueueProperties("ex.test", queue, defaultRetryDlq, enableSnakeCaseForQueuesAndExchangeNames);
     }
@@ -88,5 +104,4 @@ public class TunedRabbitPropertiesTest {
 
         return queueProperties;
     }
-
 }
