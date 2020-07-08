@@ -543,8 +543,8 @@ public class TunedRabbitAutoConfigurationTest {
         // assure that have hosts
         Field addressesField = AbstractConnectionFactory.class.getDeclaredField("addresses");
         addressesField.setAccessible(true);
-        Address[] addresses = (Address[]) addressesField.get(connectionFactory);
-        List<String> hosts = Stream.of(addresses)
+        List<Address> addresses = (List<Address>) addressesField.get(connectionFactory);
+        List<String> hosts = addresses.stream()
                 .map(a -> String.format("%s:%d", a.getHost(), a.getPort()))
                 .collect(toList());
         assertThat(hosts, Matchers.containsInAnyOrder("127.0.0.1:5672", "127.0.0.1:6672"));
