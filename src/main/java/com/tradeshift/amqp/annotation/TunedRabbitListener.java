@@ -21,6 +21,8 @@ public class TunedRabbitListener implements RabbitListener {
     private String errorHandler = "";
     private String concurrency = "";
     private String autoStartup = "";
+    private String executor = "";
+    private String ackMode = "";
 
 
     public TunedRabbitListener(RabbitListener rabbitListener) {
@@ -37,6 +39,8 @@ public class TunedRabbitListener implements RabbitListener {
         this.errorHandler = rabbitListener.errorHandler();
         this.concurrency = rabbitListener.concurrency();
         this.autoStartup = rabbitListener.autoStartup();
+        this.executor = rabbitListener.executor();
+        this.ackMode = rabbitListener.ackMode();
     }
 
     @Override
@@ -102,6 +106,16 @@ public class TunedRabbitListener implements RabbitListener {
     @Override
     public String autoStartup() {
         return this.autoStartup;
+    }
+
+    @Override
+    public String executor() {
+        return this.executor;
+    }
+
+    @Override
+    public String ackMode() {
+        return this.ackMode;
     }
 
     @Override
