@@ -25,7 +25,7 @@
     <description>Example module to showcase with Java</description>
 
     <properties>
-        <springboot.version>2.2.4.RELEASE</springboot.version>
+        <springboot.version>2.2.7.RELEASE</springboot.version>
     </properties>
 
     <dependencies>
