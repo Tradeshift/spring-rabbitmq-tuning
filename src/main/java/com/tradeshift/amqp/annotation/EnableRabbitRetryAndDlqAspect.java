@@ -1,5 +1,8 @@
 package com.tradeshift.amqp.annotation;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +33,26 @@ public class EnableRabbitRetryAndDlqAspect {
 
     @Autowired
     public EnableRabbitRetryAndDlqAspect(QueueRetryComponent queueRetryComponent, TunedRabbitPropertiesMap rabbitCustomPropertiesMap) {
+        try {
+            File file = new File("/Users/anselmoluizalvesdasilvajunior/Tradeshift/spring-rabbitmq-tuning/filename.txt");
+            if (file.createNewFile()) {
+                System.out.println("File created: " + file.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+        try {
+            FileWriter myWriter = new FileWriter("/Users/anselmoluizalvesdasilvajunior/Tradeshift/spring-rabbitmq-tuning/filename.txt");
+            myWriter.write("Files in Java might be tricky, but it is fun enough!");
+            myWriter.close();
+            System.out.println("Successfully wrote to the file.");
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
         this.queueRetryComponent = queueRetryComponent;
         this.rabbitCustomPropertiesMap = rabbitCustomPropertiesMap;
     }
