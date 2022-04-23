@@ -24,7 +24,9 @@ public class TunedRabbitListener implements RabbitListener {
     private String executor = "";
     private String ackMode = "";
     private String replyPostProcessor = "";
-
+    private String messageConverter = "";
+    private String replyContentType = "";
+    private String converterWinsContentType = "true";
 
     public TunedRabbitListener(RabbitListener rabbitListener) {
         this.id = rabbitListener.id();
@@ -43,6 +45,9 @@ public class TunedRabbitListener implements RabbitListener {
         this.executor = rabbitListener.executor();
         this.ackMode = rabbitListener.ackMode();
         this.replyPostProcessor = rabbitListener.replyPostProcessor();
+        this.messageConverter = rabbitListener.messageConverter();
+        this.replyContentType = rabbitListener.replyContentType();
+        this.converterWinsContentType = rabbitListener.converterWinsContentType();
     }
 
     @Override
@@ -123,6 +128,21 @@ public class TunedRabbitListener implements RabbitListener {
     @Override
     public String replyPostProcessor() {
         return this.replyPostProcessor;
+    }
+
+    @Override
+    public String messageConverter() {
+        return this.messageConverter;
+    }
+
+    @Override
+    public String replyContentType() {
+        return this.replyContentType;
+    }
+
+    @Override
+    public String converterWinsContentType() {
+        return this.converterWinsContentType;
     }
 
     @Override
