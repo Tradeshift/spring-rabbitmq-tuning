@@ -23,6 +23,10 @@ public class TunedRabbitListener implements RabbitListener {
     private String autoStartup = "";
     private String executor = "";
     private String ackMode = "";
+    private String replyPostProcessor = "";
+    private String messageConverter = "";
+    private String converterWinsContentType = "";
+    private String replyContentType = "";
 
 
     public TunedRabbitListener(RabbitListener rabbitListener) {
@@ -116,6 +120,26 @@ public class TunedRabbitListener implements RabbitListener {
     @Override
     public String ackMode() {
         return this.ackMode;
+    }
+
+    @Override
+    public String replyPostProcessor() {
+        return this.replyPostProcessor;
+    }
+
+    @Override
+    public String messageConverter() {
+        return this.messageConverter;
+    }
+
+    @Override
+    public String replyContentType() {
+        return this.replyContentType;
+    }
+
+    @Override
+    public String converterWinsContentType() {
+        return this.converterWinsContentType;
     }
 
     @Override

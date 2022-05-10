@@ -17,7 +17,7 @@ This library makes it easy to configure RabbitMQ for use with Spring.
 ___
 
 ## Technologies
- This lib uses **Java 8** and **Spring Boot 2.2.x.RELEASE**
+ This lib uses **Java 8** and **Spring Boot 2.6.7**
  
 ## Adding in your project
 
@@ -27,15 +27,15 @@ ___
 <dependency>
   <groupId>com.tradeshift</groupId>
   <artifactId>spring-rabbitmq-tuning-lib</artifactId>
-  <version>0.1.2</version>
+  <version>0.1.3</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'com.tradeshift:spring-rabbitmq-tuning-lib:0.1.2'
+implementation 'com.tradeshift:spring-rabbitmq-tuning-lib:0.1.3'
 ```
 
 # Current Version
-## 0.1.2
+## 0.1.3
