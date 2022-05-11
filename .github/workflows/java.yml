@@ -1,0 +1,49 @@
+name: Master
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Cache Maven resources
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Setup Java and Maven
+        uses: tradeshift/actions-setup-java@v1
+        with:
+          java-version: 8
+          maven-version: "3.8.4"
+          maven-ca-cert-b64: ${{ secrets.MTLS_CACERT }}
+          maven-keystore-p12-b64: ${{ secrets.MAVEN_P12 }}
+          maven-keystore-password: ${{ secrets.MAVEN_P12_PASSWORD }}
+          maven-settings-b64: ${{ secrets.MAVEN_SETTINGS }}
+          maven-security-settings-b64: ${{ secrets.MAVEN_SECURITY }}
+
+      - name: Verify
+        run: mvn -B verify
+
+      - name: SonarQube
+        uses: tradeshift/actions-sonarqube@v2
+        with:
+          ca-cert: ${{ secrets.MTLS_CACERT }}
+          client-cert: ${{ secrets.MTLS_CERT }}
+          client-key: ${{ secrets.MTLS_KEY }}
+          token: ${{ secrets.SONAR_TOKEN }}
+          host: "https://sonar.ts.sv"
+          args: |
+            -Dsonar.exclusions=**/**.java
+
