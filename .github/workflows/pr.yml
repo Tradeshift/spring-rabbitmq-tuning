@@ -1,0 +1,32 @@
+name: Pull Request
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - uses: tradeshift/actions-setup-java@v1
+        with:
+          java-version: 8
+          maven-version: "3.6.3"
+          maven-ca-cert-b64: ${{ secrets.MTLS_CACERT }}
+          maven-keystore-p12-b64: ${{ secrets.MAVEN_P12 }}
+          maven-keystore-password: ${{ secrets.MAVEN_P12_PASSWORD }}
+          maven-settings-b64: ${{ secrets.MAVEN_SETTINGS }}
+          maven-security-settings-b64: ${{ secrets.MAVEN_SECURITY }}
+
+      - name: Test & Create jar
+        run: mvn clean verify
+
