@@ -1,7 +1,6 @@
 package com.tradeshift.amqp.rabbit.annotation;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
 
 import org.springframework.amqp.core.AbstractExchange;
 import org.springframework.amqp.core.Binding;
@@ -26,15 +25,14 @@ public class TunedRabbitListenerAnnotationBeanPostProcessor
     private ApplicationContext applicationContext;
 
     @Override
-    protected Collection<Declarable> processAmqpListener(RabbitListener rabbitListener, Method method, Object bean, String beanName) {
+    protected void processAmqpListener(RabbitListener rabbitListener, Method method, Object bean, String beanName) {
         TunedRabbitPropertiesMap tunedRabbitPropertiesMap = applicationContext.getBean(TunedRabbitPropertiesMap.class);
         TunedRabbitProperties tunedRabbitProperties = tunedRabbitPropertiesMap.get(rabbitListener.containerFactory());
 
         TunedRabbitListener tunedRabbitListener = new TunedRabbitListener(rabbitListener);
         tunedRabbitListener.setContainerFactory(RabbitBeanNameResolver.getSimpleRabbitListenerContainerFactoryBean(tunedRabbitProperties));
-        Collection<Declarable> declarable = super.processAmqpListener(tunedRabbitListener, method, bean, beanName);
+        super.processAmqpListener(tunedRabbitListener, method, bean, beanName);
         enhanceBeansWithReferenceToRabbitAdmin(tunedRabbitProperties);
-        return declarable;
     }
 
     private void enhanceBeansWithReferenceToRabbitAdmin(TunedRabbitProperties tunedRabbitProperties) {

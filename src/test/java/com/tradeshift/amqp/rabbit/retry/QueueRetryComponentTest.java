@@ -96,7 +96,7 @@ public class QueueRetryComponentTest {
     @Test
     public void should_call_send_to_dlq_with_correct_params() {
         when(rabbitTemplateHandler.getRabbitTemplate(Mockito.any(TunedRabbitProperties.class))).thenReturn(rabbitTemplate);
-        doNothing().when(rabbitTemplate).send(Mockito.any(), Mockito.any(), Mockito.any(Message.class));
+        doNothing().when(rabbitTemplate).send(Mockito.any(), Mockito.any(), Mockito.any());
 
         MessageProperties messageProperties = createMessageProperties(3);
         Message message = new Message("some".getBytes(), messageProperties);
@@ -111,7 +111,7 @@ public class QueueRetryComponentTest {
     @Test
     public void should_call_send_to_retry_with_correct_params_without_ttl_message() {
         when(rabbitTemplateHandler.getRabbitTemplate(Mockito.any(TunedRabbitProperties.class))).thenReturn(rabbitTemplate);
-        doNothing().when(rabbitTemplate).send(Mockito.any(), Mockito.any(), Mockito.any(Message.class));
+        doNothing().when(rabbitTemplate).send(Mockito.any(), Mockito.any(), Mockito.any());
 
         int numberOfDeaths = 3;
         MessageProperties messageProperties = createMessageProperties(numberOfDeaths);
@@ -128,7 +128,7 @@ public class QueueRetryComponentTest {
     @Test
     public void should_call_send_to_retry_and_sent_to_dlq_based_on_max_retries() {
         when(rabbitTemplateHandler.getRabbitTemplate(Mockito.any(TunedRabbitProperties.class))).thenReturn(rabbitTemplate);
-        doNothing().when(rabbitTemplate).send(Mockito.any(), Mockito.any(), Mockito.any(Message.class));
+        doNothing().when(rabbitTemplate).send(Mockito.any(), Mockito.any(), Mockito.any());
 
         int maxRetry = 5;
         TunedRabbitProperties queueProperties = createQueueProperties(2, maxRetry);
@@ -145,7 +145,7 @@ public class QueueRetryComponentTest {
     @Test
     public void should_call_send_to_retry_and_sent_to_dlq_based_on_max_retries_again() {
         when(rabbitTemplateHandler.getRabbitTemplate(Mockito.any(TunedRabbitProperties.class))).thenReturn(rabbitTemplate);
-        doNothing().when(rabbitTemplate).send(Mockito.any(), Mockito.any(), Mockito.any(Message.class));
+        doNothing().when(rabbitTemplate).send(Mockito.any(), Mockito.any(), Mockito.any());
 
         int maxRetry = 10;
         TunedRabbitProperties queueProperties = createQueueProperties(2, maxRetry);
