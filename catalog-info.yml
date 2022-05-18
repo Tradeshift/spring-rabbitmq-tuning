@@ -1,0 +1,24 @@
+
+# catalog-info.yml
+# This file contains metadata for backstage
+# Read more about available fields and annotations:
+# https://github.com/tradeshift/backstage
+#
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: spring-rabbitmq-tuning
+  description: |
+    This library makes it easy to configure RabbitMQ for use with Spring
+  annotations:
+    github.com/project-slug: Tradeshift/spring-rabbitmq-tuning # GitHub project name
+    sentry.io/project-slug: spring-rabbitmq-tuning # Name in sentry for enabling Sentry integration
+    backstage.io/kubernetes-id: spring-rabbitmq-tuning # Kubernetes app id, this is a Kubernetes label from the deployment of your service look for ex. app: backstage
+    # pagerduty.com/integration-key: a834115a04c748a5befc777442e209b8 # PagerDuty integration id from the service. Can be created in Pagerduty under Service Discovery -> Service name -> Integrations tab -> Add new integration. Please use the Events API v2, this might require you to chnage 'Alert and Incident Settings' on the 'Integrations tab' page.
+    sonarqube.org/project-key: spring-rabbitmq-tuning # Name of the project in SonarQube
+  tags:
+    - java
+spec:
+  type: library
+  owner: product-engine
+  lifecycle: production
