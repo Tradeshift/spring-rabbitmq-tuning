@@ -20,5 +20,5 @@ metadata:
     - java
 spec:
   type: library
-  owner: product-engine
+  owner: pay-automation
   lifecycle: production
