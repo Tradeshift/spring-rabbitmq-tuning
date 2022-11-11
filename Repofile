@@ -1,6 +1,9 @@
 {
     "description": "This library makes it easy to configure RabbitMQ for use with Spring",
     "enableWiki": true,
-    "maintainers": ["Product Engine", "pay-automation"],
+    "maintainers": [
+        "product-engine",
+        "pay-automation"
+    ],
     "enableIssues": true
 }
