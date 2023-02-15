@@ -36,7 +36,7 @@ jobs:
         uses: tradeshift/actions-setup-java-mtls@v1
         with:
           java-version: "${{ steps.setupJava.outputs.version }}"
-          maven-settings: ${{ secrets.MAVEN_SETTINGS }}
+          maven-settings: ${{ secrets.MAVEN_SETTINGS_GH_PG }}
           maven-security: ${{ secrets.MAVEN_SECURITY }}
           maven-p12: ${{ secrets.MAVEN_P12 }}
           maven-p12-password: ${{ secrets.MAVEN_P12_PASSWORD }}
@@ -52,7 +52,6 @@ jobs:
           client-cert: ${{ secrets.MTLS_CERT }}
           client-key: ${{ secrets.MTLS_KEY }}
           token: ${{ secrets.SONAR_TOKEN }}
-          host: "https://sonar.ts.sv"
           args: |
             -Dsonar.exclusions=**/**.java
 
