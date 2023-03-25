@@ -60,7 +60,7 @@ public class QueueFactoryTest {
 
         verify(rabbitAdminMock, times(1)).declareExchange(any(TopicExchange.class));
         verify(rabbitAdminMock, times(3)).declareQueue(any(Queue.class));
-        verify(rabbitAdminMock, times(3)).declareBinding(any(Binding.class));
+        verify(rabbitAdminMock, times(4)).declareBinding(any(Binding.class));
     }
 
     @Test
@@ -75,7 +75,7 @@ public class QueueFactoryTest {
 
         verify(rabbitAdminMock, times(1)).declareExchange(any(DirectExchange.class));
         verify(rabbitAdminMock, times(3)).declareQueue(any(Queue.class));
-        verify(rabbitAdminMock, times(3)).declareBinding(any(Binding.class));
+        verify(rabbitAdminMock, times(4)).declareBinding(any(Binding.class));
     }
 
 }

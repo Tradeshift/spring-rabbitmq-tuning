@@ -20,7 +20,7 @@ public class QueueFactory {
 
     public void create() {
         Exchange exchange = new TopicExchange(properties.getExchange(), true, false);
-
+        
         if (isADirectExchange(properties)) {
             exchange = new DirectExchange(properties.getExchange(), true, false);
         } else if (isAFanoutExchange(properties)) {
@@ -36,13 +36,24 @@ public class QueueFactory {
             final Queue dlq = QueueBuilder.durable(properties.getQueueDlq()).build();
             final Queue retry = QueueBuilder.durable(properties.getQueueRetry())
                     .withArgument("x-dead-letter-exchange", properties.getExchange())
-                    .withArgument("x-dead-letter-routing-key", properties.getQueueRoutingKey())
+                    .withArgument("x-dead-letter-routing-key", properties.getQueue())
                     .build();
             rabbitAdmin.declareQueue(dlq);
             rabbitAdmin.declareQueue(retry);
-            rabbitAdmin.declareBinding(BindingBuilder.bind(retry).to(exchange).with(properties.getQueueRetry()).noargs());
-            rabbitAdmin.declareBinding(BindingBuilder.bind(dlq).to(exchange).with(properties.getQueueDlq()).noargs());
+            rabbitAdmin.declareBinding(generateBinding(properties.getQueue(), properties.getQueue(), properties.getExchange()));
+            rabbitAdmin.declareBinding(generateBinding(properties.getQueueDlq(), properties.getQueueDlq(), properties.getExchange()));
+            rabbitAdmin.declareBinding(generateBinding(properties.getQueueRetry(), properties.getQueueRetry(), properties.getExchange()));
         }
+    }
+    
+    private  Binding generateBinding (String destination, String routingKey, String exchange) {
+        return new Binding(
+                destination,
+                Binding.DestinationType.QUEUE,
+                exchange,
+                routingKey,
+                null
+        );
     }
 
     private boolean isAValidExchange(TunedRabbitProperties properties) {
