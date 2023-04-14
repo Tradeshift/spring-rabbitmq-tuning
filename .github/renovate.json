@@ -2,5 +2,33 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>Tradeshift/renovate-config"
+  ],
+  "packageRules": [
+    {
+      "groupName": "All non-major dependencies",
+      "groupSlug": "all-minor-patch",
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "matchCurrentVersion": "!/^0\\./",
+      "automerge": true,
+      "timezone": "Europe/Copenhagen",
+      "schedule": [
+        "before 8am",
+        "after 5pm"
+      ]
+    },
+    {
+      "groupName": "Spring-related packages",
+      "matchUpdateTypes": [ "major" ],
+      "matchPackagePrefixes": [
+        "org.springframework:",
+        "org.springframework.boot:",
+        "org.springframework.data:",
+        "org.springframework.amqp:"
+      ],
+      "enabled": false
+    }
   ]
 }
