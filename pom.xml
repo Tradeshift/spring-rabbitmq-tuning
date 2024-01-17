@@ -55,7 +55,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <springboot.version>2.7.12</springboot.version>
+        <springboot.version>2.7.18</springboot.version>
         <jackson-databind.version>2.15.1</jackson-databind.version>
     </properties>
 
