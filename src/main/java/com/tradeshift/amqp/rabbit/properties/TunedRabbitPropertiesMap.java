@@ -2,8 +2,10 @@ package com.tradeshift.amqp.rabbit.properties;
 
 import java.util.HashMap;
 import java.util.stream.Stream;
-import javax.annotation.PostConstruct;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import jakarta.annotation.PostConstruct;
 
 @ConfigurationProperties("spring.rabbitmq.custom")
 public class TunedRabbitPropertiesMap extends HashMap<String, TunedRabbitProperties> {
