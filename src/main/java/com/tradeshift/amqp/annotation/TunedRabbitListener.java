@@ -143,6 +143,11 @@ public class TunedRabbitListener implements RabbitListener {
     }
 
     @Override
+    public String batch() {
+        return null;
+    }
+
+    @Override
     public Class<? extends Annotation> annotationType() {
         return RabbitListener.class;
     }
