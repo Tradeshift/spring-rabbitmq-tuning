@@ -28,6 +28,7 @@ jobs:
         with:
           java-version: 8
           distribution: 'zulu'
+          
       - name: Set up Maven
         uses: tradeshift/actions-setup-maven@v4.5
         with:
