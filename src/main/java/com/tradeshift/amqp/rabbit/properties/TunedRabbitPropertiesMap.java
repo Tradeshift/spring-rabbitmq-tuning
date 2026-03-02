@@ -2,7 +2,7 @@ package com.tradeshift.amqp.rabbit.properties;
 
 import java.util.HashMap;
 import java.util.stream.Stream;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("spring.rabbitmq.custom")

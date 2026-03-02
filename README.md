@@ -17,7 +17,7 @@ This library makes it easy to configure RabbitMQ for use with Spring.
 ___
 
 ## Technologies
- This lib uses **Java 8** and **Spring Boot 2.6.7**
+ This lib uses **Java 17** and **Spring Boot 3.4.14**
  
 ## Adding in your project
 
