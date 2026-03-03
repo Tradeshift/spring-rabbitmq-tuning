@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: [self-hosted,ts-large-x64-docker-large]
+    runs-on: [ self-hosted,ts-m-x-small-x64 ]
     steps:
       - name: Git Checkout
         uses: actions/checkout@v6
