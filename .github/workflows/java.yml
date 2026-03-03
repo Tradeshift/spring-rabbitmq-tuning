@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: [ self-hosted,ts-m-x-small-x64 ]
+    runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
         uses: actions/checkout@v6
@@ -33,11 +33,13 @@ jobs:
         with:
           maven-version: 3.8.6
       - name: Configure maven
-        uses: tradeshift/actions-setup-java-mtls@v1.1.4
+        uses: tradeshift/actions-setup-java-mtls@v1
         with:
           java-version: "${{ steps.setupJava.outputs.version }}"
           maven-settings: ${{ secrets.MAVEN_SETTINGS_GH_PG }}
           maven-security: ${{ secrets.MAVEN_SECURITY }}
+          maven-p12: ${{ secrets.MAVEN_P12 }}
+          maven-p12-password: ${{ secrets.MAVEN_P12_PASSWORD }}
           mtls-cacert: ${{ secrets.MTLS_CACERT }}
 
       - name: Verify
