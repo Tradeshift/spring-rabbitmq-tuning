@@ -18,6 +18,12 @@ public final class TLSContextUtil {
     private TLSContextUtil() {
     }
 
+    /**
+     * Creates an SSLContext for TLSv1.2 from a PKCS12 keystore containing both the client certificate and the trusted CA certificates.
+     * @param pkcs12
+     * @param password
+     * @return
+     */
     public static SSLContext tls12ContextFromPKCS12(InputStream pkcs12, char[] password) {
         try {
             Objects.requireNonNull(pkcs12);
