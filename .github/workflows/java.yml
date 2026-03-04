@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -26,12 +26,12 @@ jobs:
         id: setupJava
         uses: actions/setup-java@v5
         with:
-          java-version: 8
+          java-version: '17'
           distribution: 'zulu'
       - name: Set up Maven
         uses: tradeshift/actions-setup-maven@v4.5
         with:
-          maven-version: 3.8.4
+          maven-version: 3.8.6
       - name: Configure maven
         uses: tradeshift/actions-setup-java-mtls@v1
         with:

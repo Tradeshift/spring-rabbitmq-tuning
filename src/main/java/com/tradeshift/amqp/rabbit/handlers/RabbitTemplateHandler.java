@@ -4,8 +4,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.BeanInstantiationException;
-import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
