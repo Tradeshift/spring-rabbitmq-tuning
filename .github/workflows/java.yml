@@ -46,7 +46,7 @@ jobs:
         run: mvn -B verify
 
       - name: SonarQube
-        uses: tradeshift/actions-sonarqube@v2
+        uses: tradeshift/actions-sonarqube@master
         with:
           ca-cert: ${{ secrets.MTLS_CACERT }}
           client-cert: ${{ secrets.MTLS_CERT }}
